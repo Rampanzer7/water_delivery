@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{% if order %}Изменение заказа №{{ order.pk }}{% else %}Оформление заказа{% endif %}{% endblock %}
+{% block content %}
+<h1>{% if order %}Изменение заказа №{{ order.pk }}{% else %}Оформление заказа{% endif %}</h1>
+<div class="two-columns">
+  <form class="form-card" id="order-form" method="post" data-slots-url="{% url 'api_slots' %}"
+    data-calc-url="{% url 'api_calc' %}" {% if order %} data-order="{{ order.pk }}" {% endif %}>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% include 'store/_form_fields.html' %}
+    <button class="button" type="submit">{% if order %}Сохранить{% else %}Подтвердить заказ{% endif %}</button>
+  </form>
+  <aside class="summary">
+    <h2>Состав заказа</h2>
+    <table>
+      <tbody>
+        {% for product, quantity, subtotal in lines %}
+        <tr>
+          <td>{{ product.name }} × {{ quantity }}</td>
+          <td>{{ subtotal|floatformat:"-2" }} ₽</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <dl class="totals">
+      <dt>Товары</dt>
+      <dd><span id="sum-goods">{{ totals.goods|floatformat:"-2" }}</span> ₽</dd>
+      <dt>Залог за недостающую тару</dt>
+      <dd><span id="sum-deposit">{{ totals.deposit|floatformat:"-2" }}</span> ₽</dd>
+      <dt>Итого</dt>
+      <dd><strong><span id="sum-total">{{ totals.total|floatformat:"-2" }}</span> ₽</strong></dd>
+    </dl>
+    <p class="muted">Заказано бутылей: <span id="sum-bottles">{{ totals.bottles }}</span>. Не хватает пустой тары: <span
+        id="sum-missing">{{ totals.missing }}</span>.</p>
+  </aside>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'js/checkout.js' %}"></script>{% endblock %}

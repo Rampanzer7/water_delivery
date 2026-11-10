@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<h1>{{ title }}</h1>
+<form class="form-card" method="post">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  {% include 'store/_form_fields.html' %}
+  <button class="button" type="submit">Сохранить</button>
+  <a class="button secondary" href="{% url 'address_list' %}">Отмена</a>
+</form>
+{% endblock %}

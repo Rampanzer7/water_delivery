@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Мои заказы{% endblock %}
+{% block content %}
+<h1>Мои заказы</h1>
+<form class="filters" method="get">
+  <div class="field">
+    <label for="status">Статус</label>
+    <select id="status" name="status">
+      <option value="">Все</option>
+      {% for value, label in statuses %}<option value="{{ value }}" {% if status==value %} selected{% endif %}>{{ label
+        }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label for="sort">Сортировка</label>
+    <select id="sort" name="sort">
+      {% for value, label in sort_options %}<option value="{{ value }}" {% if sort==value %} selected{% endif %}>{{
+        label }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="field"><button class="button" type="submit">Применить</button></div>
+</form>
+{% if page %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>№</th>
+        <th>Доставка</th>
+        <th>Адрес</th>
+        <th>Сумма</th>
+        <th>Статус</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in page %}
+      <tr>
+        <td>{{ order.pk }}</td>
+        <td>{{ order.delivery_date|date:"d.m.Y" }}, {{ order.slot }}</td>
+        <td>{{ order.address }}</td>
+        <td>{{ order.total|floatformat:"-2" }} ₽</td>
+        <td><span class="status {{ order.status }}">{{ order.get_status_display }}</span></td>
+        <td><a href="{% url 'order_detail' order.pk %}">Открыть</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include 'store/_pagination.html' %}
+{% else %}
+<p>Заказов пока нет. <a href="{% url 'catalog' %}">Выбрать воду</a></p>
+{% endif %}
+{% endblock %}

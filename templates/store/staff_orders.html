@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}Все заказы{% endblock %}
+{% block content %}
+<h1>Все заказы</h1>
+<form class="filters" method="get">
+  <div class="field">
+    <label for="q">Поиск</label>
+    <input id="q" type="text" name="q" value="{{ query }}" placeholder="Номер, логин или телефон">
+  </div>
+  <div class="field">
+    <label for="status">Статус</label>
+    <select id="status" name="status">
+      <option value="">Все</option>
+      {% for value, label in statuses %}<option value="{{ value }}" {% if status==value %} selected{% endif %}>{{ label
+        }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label for="district">Район</label>
+    <select id="district" name="district">
+      <option value="">Все</option>
+      {% for item in districts %}<option value="{{ item.pk }}" {% if district==item.pk %} selected{% endif %}>{{
+        item.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label for="date">Дата доставки</label>
+    <input id="date" type="date" name="date" value="{{ date }}">
+  </div>
+  <div class="field">
+    <label for="sort">Сортировка</label>
+    <select id="sort" name="sort">
+      {% for value, label in sort_options %}<option value="{{ value }}" {% if sort==value %} selected{% endif %}>{{
+        label }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <button class="button" type="submit">Применить</button>
+    <a class="button secondary" href="{% url 'staff_orders' %}">Сбросить</a>
+  </div>
+</form>
+
+{% if page %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>№</th>
+        <th>Клиент</th>
+        <th>Доставка</th>
+        <th>Район</th>
+        <th>Сумма</th>
+        <th>Статус</th>
+        <th>Водитель</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in page %}
+      <tr>
+        <td><a href="{% url 'order_detail' order.pk %}">{{ order.pk }}</a></td>
+        <td>{{ order.user.username }}</td>
+        <td>{{ order.delivery_date|date:"d.m.Y" }}, {{ order.slot }}</td>
+        <td>{{ order.address.district }}</td>
+        <td>{{ order.total|floatformat:"-2" }} ₽</td>
+        <td><span class="status {{ order.status }}">{{ order.get_status_display }}</span></td>
+        <td>
+          {% if order.status == 'new' %}
+          <form class="inline-form" method="post" action="{% url 'staff_assign' order.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <label class="visually-hidden" for="driver-{{ order.pk }}">Водитель</label>
+            <select id="driver-{{ order.pk }}" name="driver">
+              {% for driver in drivers %}<option value="{{ driver.pk }}">{{ driver.username }}</option>{% endfor %}
+            </select>
+            <button class="button small" type="submit">Назначить</button>
+          </form>
+          {% else %}
+          {{ order.route_sheet.driver.username }}
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include 'store/_pagination.html' %}
+{% else %}
+<p>Заказов по этим условиям нет.</p>
+{% endif %}
+{% endblock %}

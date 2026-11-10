@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Санитарная обработка{% endblock %}
+{% block content %}
+<h1>Санитарная обработка кулера</h1>
+<p>{{ rental.cooler.name }}, {{ rental.address }}</p>
+<form class="form-card" method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  {% include 'store/_form_fields.html' %}
+  <button class="button" type="submit">Отправить заявку</button>
+</form>
+<h2>Ваши заявки</h2>
+{% if requests %}
+<div class="cards">
+  {% for item in requests %}
+  <article class="card">
+    <img src="{{ item.photo.url }}" alt="Фото кулера к заявке №{{ item.pk }}">
+    <p>На {{ item.desired_date|date:"d.m.Y" }}</p>
+    <p class="muted">{{ item.get_status_display }}{% if item.comment %}. {{ item.comment }}{% endif %}</p>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<p>Заявок пока нет.</p>
+{% endif %}
+{% endblock %}

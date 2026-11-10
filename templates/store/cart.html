@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Корзина{% endblock %}
+{% block content %}
+<h1>Корзина</h1>
+{% if lines %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Товар</th>
+        <th>Цена</th>
+        <th>Количество</th>
+        <th>Сумма</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for product, quantity, subtotal in lines %}
+      <tr>
+        <td>{{ product.name }}</td>
+        <td>{{ product.price|floatformat:"-2" }} ₽</td>
+        <td>
+          <form class="inline-form" method="post" action="{% url 'cart_update' product.pk %}">
+            {% csrf_token %}
+            <label class="visually-hidden" for="cart-{{ product.pk }}">Количество</label>
+            <input id="cart-{{ product.pk }}" type="number" name="quantity" value="{{ quantity }}" min="0"
+              max="{{ product.stock }}">
+            <button class="button small" type="submit">Обновить</button>
+          </form>
+        </td>
+        <td>{{ subtotal|floatformat:"-2" }} ₽</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<p class="price">Товары: {{ totals.goods|floatformat:"-2" }} ₽</p>
+<p class="muted">Залог за бутыли рассчитается при оформлении зависит от того, сколько пустой тары вы сдадите.</p>
+<p><a class="button" href="{% url 'checkout' %}">Оформить заказ</a> <a class="button secondary"
+    href="{% url 'catalog' %}">Продолжить покупки</a></p>
+{% else %}
+<p>В корзине пока пусто.</p>
+<p><a class="button" href="{% url 'catalog' %}">Выбрать воду</a></p>
+{% endif %}
+{% endblock %}

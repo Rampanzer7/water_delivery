@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Маршрутные листы{% endblock %}
+{% block content %}
+<h1>Маршрутные листы</h1>
+{% if page %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>№</th>
+        <th>Дата</th>
+        <th>Водитель</th>
+        <th>Заказов</th>
+        <th>Сумма</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sheet in page %}
+      <tr>
+        <td>{{ sheet.pk }}</td>
+        <td>{{ sheet.date|date:"d.m.Y" }}</td>
+        <td>{{ sheet.driver.username }}</td>
+        <td>{{ sheet.orders_count }}</td>
+        <td>{{ sheet.orders_sum|default:0|floatformat:"-2" }} ₽</td>
+        <td><a href="{% url 'route_detail' sheet.pk %}">Открыть</a> · <a href="{% url 'route_csv' sheet.pk %}">CSV</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include 'store/_pagination.html' %}
+{% else %}
+<p>Маршрутных листов пока нет.</p>
+{% endif %}
+{% endblock %}

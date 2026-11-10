@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Сводка{% endblock %}
+{% block content %}
+<h1>Сводка по заказам</h1>
+<div class="metrics">
+  <div class="metric"><span class="metric-value">{{ count }}</span><span class="muted">заказов всего</span></div>
+  <div class="metric"><span class="metric-value">{{ revenue|floatformat:"-2" }} ₽</span><span class="muted">общая
+      сумма</span></div>
+  <div class="metric"><span class="metric-value">{{ average|floatformat:"-2" }} ₽</span><span class="muted">средний
+      чек</span></div>
+  <div class="metric"><span class="metric-value">{{ share }}%</span><span class="muted">доставлено</span></div>
+  <div class="metric"><span class="metric-value">{{ bottles }}</span><span class="muted">бутылей доставлено</span></div>
+  <div class="metric"><span class="metric-value">{{ deposit|floatformat:"-2" }} ₽</span><span class="muted">залогов за
+      тару</span></div>
+  <div class="metric"><span class="metric-value">{{ active_rentals }}</span><span class="muted">кулеров в аренде</span>
+  </div>
+</div>
+
+<h2>Заказы по дням доставки (последние 14 дней)</h2>
+<canvas id="chart-days" class="chart" height="260"></canvas>
+
+<h2>Заказы по районам</h2>
+<canvas id="chart-districts" class="chart" height="260"></canvas>
+
+{{ day_labels|json_script:"day-labels" }}
+{{ day_values|json_script:"day-values" }}
+{{ district_labels|json_script:"district-labels" }}
+{{ district_values|json_script:"district-values" }}
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'js/chart.js' %}"></script>{% endblock %}

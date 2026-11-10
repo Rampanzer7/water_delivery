@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Аренда кулеров{% endblock %}
+{% block content %}
+<h1>Аренда кулеров</h1>
+<div class="cards">
+  {% for cooler in coolers %}
+  <article class="card">
+    <h2>{{ cooler.name }}</h2>
+    <p class="muted">{{ cooler.description }}</p>
+    <p class="price">{{ cooler.monthly_price|floatformat:"-2" }} ₽ в месяц</p>
+    <p class="muted">Залог: {{ cooler.deposit|floatformat:"-2" }} ₽</p>
+    {% if cooler.quantity %}
+    <a class="button" href="{% url 'rent_cooler' cooler.pk %}">Арендовать</a>
+    {% else %}
+    <p class="muted">Сейчас нет в наличии</p>
+    {% endif %}
+  </article>
+  {% endfor %}
+</div>
+{% endblock %}

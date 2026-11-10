@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}Каталог воды{% endblock %}
+{% block content %}
+<h1>Питьевая вода и помпы</h1>
+
+<form class="filters" method="get">
+  <div class="field">
+    <label for="q">Поиск</label>
+    <input id="q" type="text" name="q" value="{{ query }}" placeholder="Название или описание">
+  </div>
+  <div class="field">
+    <label for="kind">Тип</label>
+    <select id="kind" name="kind">
+      <option value="">Все</option>
+      {% for value, label in kinds %}<option value="{{ value }}" {% if kind==value %} selected{% endif %}>{{ label }}
+      </option>{% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label for="price_min">Цена от</label>
+    <input id="price_min" type="number" min="0" name="price_min" value="{{ price_min }}">
+  </div>
+  <div class="field">
+    <label for="price_max">Цена до</label>
+    <input id="price_max" type="number" min="0" name="price_max" value="{{ price_max }}">
+  </div>
+  <div class="field">
+    <label for="sort">Сортировка</label>
+    <select id="sort" name="sort">
+      {% for value, label in sort_options %}<option value="{{ value }}" {% if sort==value %} selected{% endif %}>{{
+        label }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="field checkbox">
+    <label><input type="checkbox" name="available" value="1" {% if only_available %} checked{% endif %}> Только в
+      наличии</label>
+  </div>
+  <div class="field">
+    <button class="button" type="submit">Применить</button>
+    <a class="button secondary" href="{% url 'catalog' %}">Сбросить</a>
+  </div>
+</form>
+
+{% if page %}
+<div class="cards">
+  {% for product in page %}
+  <article class="card">
+    <h2>{{ product.name }}</h2>
+    <p class="muted">{{ product.get_kind_display }}{% if product.volume %}, {{ product.volume|floatformat:"-1" }} л{%
+      endif %}</p>
+    <p class="price">{{ product.price|floatformat:"-2" }} ₽</p>
+    {% if product.deposit_price %}<p class="muted">Залог за бутыль: {{ product.deposit_price|floatformat:"-2" }} ₽</p>{%
+    endif %}
+    {% if product.stock %}
+    <form method="post" action="{% url 'cart_add' product.pk %}" class="buy-form">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.get_full_path }}">
+      <label class="visually-hidden" for="qty-{{ product.pk }}">Количество</label>
+      <input id="qty-{{ product.pk }}" type="number" name="quantity" value="1" min="1" max="{{ product.stock }}">
+      <button class="button" type="submit">В корзину</button>
+    </form>
+    {% else %}
+    <p class="muted">Нет в наличии</p>
+    {% endif %}
+  </article>
+  {% endfor %}
+</div>
+{% include 'store/_pagination.html' %}
+{% else %}
+<p>По вашему запросу ничего не найдено.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Мои кулеры{% endblock %}
+{% block content %}
+<h1>Мои договоры аренды</h1>
+{% if rentals %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>№</th>
+        <th>Кулер</th>
+        <th>Адрес</th>
+        <th>С даты</th>
+        <th>В месяц</th>
+        <th>Статус</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for rental in rentals %}
+      <tr>
+        <td>{{ rental.pk }}</td>
+        <td>{{ rental.cooler.name }}</td>
+        <td>{{ rental.address }}</td>
+        <td>{{ rental.start_date|date:"d.m.Y" }}</td>
+        <td>{{ rental.monthly_price|floatformat:"-2" }} ₽</td>
+        <td>{{ rental.get_status_display }}</td>
+        <td>
+          {% if rental.status == 'active' %}
+          <a href="{% url 'sanitation' rental.pk %}">Санитарная обработка</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p>Договоров пока нет. <a href="{% url 'coolers' %}">Выбрать кулер</a></p>
+{% endif %}
+{% endblock %}
