@@ -5,52 +5,74 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Святой источник — доставка воды{% endblock %}</title>
+  <title>{% block title %}Святой Источник — чистая вода и аренда кулеров{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 
 <body>
-  <header class="site-header">
-    <div class="container header-row">
-      <a class="logo" href="{% url 'catalog' %}">Святой источник</a>
-      <nav class="main-nav" aria-label="Основное меню">
-        <a href="{% url 'catalog' %}">Вода</a>
-        <a href="{% url 'coolers' %}">Кулеры</a>
-        <a href="{% url 'cart' %}">Корзина{% if cart_count %} ({{ cart_count }}){% endif %}</a>
+  <header class="wire-header">
+    <div class="wire-container wire-header-row">
+      <a class="wire-brand" href="{% url 'catalog' %}">Святой Источник</a>
+
+      <nav class="wire-nav-center desktop-nav" aria-label="Основная навигация">
+        <a class="wire-nav-link" href="{% url 'catalog' %}#popular-water">Вода и кулеры</a>
+        <a class="wire-nav-link" href="#delivery">Доставка и оплата</a>
+        <a class="wire-nav-link" href="#contacts">Контакты</a>
+      </nav>
+
+      <div class="wire-header-right desktop-nav">
         {% if user.is_authenticated %}
-        <a href="{% url 'my_orders' %}">Мои заказы</a>
-        <a href="{% url 'my_rentals' %}">Аренда</a>
-        <a href="{% url 'address_list' %}">Адреса</a>
-        {% if user_is_dispatcher %}
-        <a href="{% url 'staff_orders' %}">Все заказы</a>
-        <a href="{% url 'routes' %}">Маршруты</a>
-        <a href="{% url 'stats' %}">Сводка</a>
-        {% elif user_is_driver %}
-        <a href="{% url 'routes' %}">Мои маршруты</a>
-        {% endif %}
-        <a href="{% url 'profile' %}">{{ user.username }}</a>
+        <a class="wire-nav-link" href="{% url 'profile' %}">Кабинет ({{ user.username }})</a>
         <form class="inline-form" method="post" action="{% url 'logout' %}">
           {% csrf_token %}
-          <button class="link-button" type="submit">Выйти</button>
+          <button class="wire-nav-link logout-btn" type="submit">Выйти</button>
         </form>
         {% else %}
-        <a href="{% url 'login' %}">Войти</a>
-        <a href="{% url 'register' %}">Регистрация</a>
+        <a class="wire-nav-link" href="{% url 'login' %}">Кабинет</a>
         {% endif %}
-      </nav>
+        <a class="wire-btn wire-btn-sm" href="{% url 'cart' %}">Заказать</a>
+      </div>
+
+      <button class="mobile-menu-btn" type="button" aria-label="Открыть меню" aria-expanded="false" onclick="document.getElementById('mobileNav').classList.toggle('open')">☰</button>
     </div>
+
+    <nav id="mobileNav" class="mobile-menu" aria-label="Мобильное меню">
+      <a class="wire-nav-link" href="{% url 'catalog' %}#popular-water">Вода и кулеры</a>
+      <a class="wire-nav-link" href="#delivery">Доставка и оплата</a>
+      <a class="wire-nav-link" href="#contacts">Контакты</a>
+      {% if user.is_authenticated %}
+      <a class="wire-nav-link" href="{% url 'profile' %}">Кабинет ({{ user.username }})</a>
+      <a class="wire-nav-link" href="{% url 'my_orders' %}">Мои заказы</a>
+      <form class="inline-form" method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button class="wire-nav-link logout-btn" type="submit">Выйти</button>
+      </form>
+      {% else %}
+      <a class="wire-nav-link" href="{% url 'login' %}">Кабинет</a>
+      {% endif %}
+      <a class="wire-btn" href="{% url 'cart' %}">Заказать</a>
+    </nav>
   </header>
-  <main class="container">
+
+  <main>
     {% if messages %}
-    <ul class="messages">
-      {% for message in messages %}<li class="message {{ message.tags }}">{{ message }}</li>{% endfor %}
-    </ul>
+    <div class="wire-container">
+      <ul class="messages">
+        {% for message in messages %}<li class="message {{ message.tags }}">{{ message }}</li>{% endfor %}
+      </ul>
+    </div>
     {% endif %}
     {% block content %}{% endblock %}
   </main>
-  <footer class="site-footer">
-    <div class="container">Святой источник — доставка питьевой воды и аренда кулеров</div>
+
+  <footer id="contacts" class="wire-footer">
+    <div class="wire-container">
+      <div class="wire-footer-line wire-footer-title">Святой Источник - Вода, доставка, аренда кулеров</div>
+      <div class="wire-footer-line wire-footer-sub">Поддержка: ежедневно 08:00–20:00 | <a href="#delivery" class="footer-link">Условия и контакты</a></div>
+      <div class="wire-footer-line wire-footer-copy">©2026 Политика конфиденциальности</div>
+    </div>
   </footer>
+
   {% block scripts %}{% endblock %}
 </body>
 
