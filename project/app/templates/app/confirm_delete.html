@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Подтверждение{% endblock %}
+{% block content %}
+<h1>{{ title }}</h1>
+<form method="post">
+  {% csrf_token %}
+  <button class="button danger" type="submit">Да, удалить</button>
+  {% if back_pk %}<a class="button secondary" href="{% url back back_pk %}">Отмена</a>{% else %}<a
+    class="button secondary" href="{% url back %}">Отмена</a>{% endif %}
+</form>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Профиль{% endblock %}
+{% block content %}
+<h1>Профиль</h1>
+<dl class="details">
+  <dt>Логин</dt>
+  <dd>{{ user.username }}</dd>
+  <dt>Почта</dt>
+  <dd>{{ user.email }}</dd>
+  {% if phone %}<dt>Телефон</dt>
+  <dd>{{ phone }}</dd>{% endif %}
+  <dt>Бутылей на руках</dt>
+  <dd>{{ balance }}</dd>
+</dl>
+<p>
+  <a class="button" href="{% url 'password_change' %}">Сменить пароль</a>
+  <a class="button secondary" href="{% url 'address_list' %}">Мои адреса</a>
+</p>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Заказ №{{ order.pk }}{% endblock %}
+{% block content %}
+<h1>Заказ №{{ order.pk }} <span class="status {{ order.status }}">{{ order.get_status_display }}</span></h1>
+<dl class="details">
+  <dt>Клиент</dt>
+  <dd>{{ order.user.username }}</dd>
+  <dt>Адрес</dt>
+  <dd>{{ order.address }}</dd>
+  <dt>Доставка</dt>
+  <dd>{{ order.delivery_date|date:"d.m.Y" }}, {{ order.slot }}</dd>
+  {% if order.route_sheet %}<dt>Водитель</dt>
+  <dd>{{ order.route_sheet.driver.username }}</dd>{% endif %}
+  <dt>Сдаёт пустых бутылей</dt>
+  <dd>{{ order.returned_bottles }} из {{ order.bottles_total }}</dd>
+  {% if order.comment %}<dt>Комментарий</dt>
+  <dd>{{ order.comment }}</dd>{% endif %}
+</dl>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Товар</th>
+        <th>Цена</th>
+        <th>Количество</th>
+        <th>Сумма</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>{{ item.product.name }}</td>
+        <td>{{ item.price|floatformat:"-2" }} ₽</td>
+        <td>{{ item.quantity }}</td>
+        <td>{{ item.subtotal|floatformat:"-2" }} ₽</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<dl class="totals">
+  <dt>Товары</dt>
+  <dd>{{ order.goods_total|floatformat:"-2" }} ₽</dd>
+  <dt>Залог за {{ order.missing_bottles }} недостающих бутылей</dt>
+  <dd>{{ order.deposit_total|floatformat:"-2" }} ₽</dd>
+  <dt>Итого</dt>
+  <dd><strong>{{ order.total|floatformat:"-2" }} ₽</strong></dd>
+</dl>
+<p>
+  {% if order.is_new and order.user_id == user.id %}
+  <a class="button" href="{% url 'order_edit' order.pk %}">Изменить</a>
+  <a class="button danger" href="{% url 'order_delete' order.pk %}">Удалить</a>
+  {% endif %}
+</p>
+{% endblock %}

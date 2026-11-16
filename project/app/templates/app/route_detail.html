@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Маршрут №{{ sheet.pk }}{% endblock %}
+{% block content %}
+<h1>Маршрут №{{ sheet.pk }}, {{ sheet.date|date:"d.m.Y" }}</h1>
+<p>Водитель: {{ sheet.driver.username }}. <a href="{% url 'route_csv' sheet.pk %}">Скачать CSV</a></p>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Интервал</th>
+        <th>Адрес</th>
+        <th>Клиент</th>
+        <th>Бутылей</th>
+        <th>Сдаёт пустых</th>
+        <th>К оплате</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in orders %}
+      <tr>
+        <td>{{ order.slot }}</td>
+        <td>{{ order.address }}</td>
+        <td>{{ order.user.username }}</td>
+        <td>{{ order.bottles_total }}</td>
+        <td>{{ order.returned_bottles }}</td>
+        <td>{{ order.total|floatformat:"-2" }} ₽</td>
+        <td>
+          {% if order.status == 'assigned' %}
+          <form class="inline-form" method="post" action="{% url 'close_delivery' order.pk %}">
+            {% csrf_token %}
+            <button class="button small" type="submit">Закрыть доставку</button>
+          </form>
+          {% else %}
+          <span class="status {{ order.status }}">{{ order.get_status_display }}</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
