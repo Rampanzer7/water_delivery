@@ -16,8 +16,8 @@
 
       <nav class="wire-nav-center desktop-nav" aria-label="Основная навигация">
         <a class="wire-nav-link" href="{% url 'catalog' %}#popular-water">Вода и кулеры</a>
-        <a class="wire-nav-link" href="#delivery">Доставка и оплата</a>
-        <a class="wire-nav-link" href="#contacts">Контакты</a>
+        <a class="wire-nav-link" href="{% url 'catalog' %}#delivery">Доставка и оплата</a>
+        <a class="wire-nav-link" href="{% url 'catalog' %}#contacts">Контакты</a>
       </nav>
 
       <div class="wire-header-right desktop-nav">
@@ -38,8 +38,8 @@
 
     <nav id="mobileNav" class="mobile-menu" aria-label="Мобильное меню">
       <a class="wire-nav-link" href="{% url 'catalog' %}#popular-water">Вода и кулеры</a>
-      <a class="wire-nav-link" href="#delivery">Доставка и оплата</a>
-      <a class="wire-nav-link" href="#contacts">Контакты</a>
+      <a class="wire-nav-link" href="{% url 'catalog' %}#delivery">Доставка и оплата</a>
+      <a class="wire-nav-link" href="{% url 'catalog' %}#contacts">Контакты</a>
       {% if user.is_authenticated %}
       <a class="wire-nav-link" href="{% url 'profile' %}">Кабинет ({{ user.username }})</a>
       <a class="wire-nav-link" href="{% url 'my_orders' %}">Мои заказы</a>
@@ -68,7 +68,7 @@
   <footer id="contacts" class="wire-footer">
     <div class="wire-container">
       <div class="wire-footer-line wire-footer-title">Святой Источник - Вода, доставка, аренда кулеров</div>
-      <div class="wire-footer-line wire-footer-sub">Поддержка: ежедневно 08:00–20:00 | <a href="#delivery" class="footer-link">Условия и контакты</a></div>
+      <div class="wire-footer-line wire-footer-sub">Поддержка: ежедневно 08:00–20:00 | <a href="{% url 'catalog' %}#delivery" class="footer-link">Условия и контакты</a></div>
       <div class="wire-footer-line wire-footer-copy">©2026 Политика конфиденциальности</div>
     </div>
   </footer>

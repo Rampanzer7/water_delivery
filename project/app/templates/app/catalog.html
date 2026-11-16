@@ -12,9 +12,9 @@
       <p class="wire-hero-desc desktop-only">Вода 19 литров, удобные интервалы доставки и аренда<br>кулеров для дома и офиса.</p>
       <p class="wire-hero-desc mobile-only">Заказывайте воду 19 л и арендуйте кулер с<br>удобной доставкой.</p>
       <div class="wire-hero-actions">
-        <a class="wire-btn" href="#popular-water">Выбрать воду</a>
-        <a class="wire-btn desktop-only" href="#coolers">Арендовать кулер</a>
-        <a class="wire-btn mobile-only" href="#popular-water">Доставка по графику</a>
+        <a class="wire-btn" href="{% url 'catalog' %}#popular-water">Выбрать воду</a>
+        <a class="wire-btn desktop-only" href="{% url 'coolers' %}">Арендовать кулер</a>
+        <a class="wire-btn mobile-only" href="{% url 'catalog' %}#popular-water">Доставка по графику</a>
       </div>
     </div>
 
