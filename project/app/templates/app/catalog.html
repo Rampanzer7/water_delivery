@@ -12,7 +12,7 @@
     <label for="kind">Тип</label>
     <select id="kind" name="kind">
       <option value="">Все</option>
-      {% for value, label in kinds %}<option value="{{ value }}" {% if kind==value %} selected{% endif %}>{{ label }}
+      {% for value, label in kinds %}<option value="{{ value }}" {% if kind == value %} selected{% endif %}>{{ label }}
       </option>{% endfor %}
     </select>
   </div>
@@ -27,7 +27,7 @@
   <div class="field">
     <label for="sort">Сортировка</label>
     <select id="sort" name="sort">
-      {% for value, label in sort_options %}<option value="{{ value }}" {% if sort==value %} selected{% endif %}>{{
+      {% for value, label in sort_options %}<option value="{{ value }}" {% if sort == value %} selected{% endif %}>{{
         label }}</option>{% endfor %}
     </select>
   </div>
@@ -46,11 +46,9 @@
   {% for product in page %}
   <article class="card">
     <h2>{{ product.name }}</h2>
-    <p class="muted">{{ product.get_kind_display }}{% if product.volume %}, {{ product.volume|floatformat:"-1" }} л{%
-      endif %}</p>
+    <p class="muted">{{ product.get_kind_display }}{% if product.volume %}, {{ product.volume|floatformat:"-1" }} л{% endif %}</p>
     <p class="price">{{ product.price|floatformat:"-2" }} ₽</p>
-    {% if product.deposit_price %}<p class="muted">Залог за бутыль: {{ product.deposit_price|floatformat:"-2" }} ₽</p>{%
-    endif %}
+    {% if product.deposit_price %}<p class="muted">Залог за бутыль: {{ product.deposit_price|floatformat:"-2" }} ₽</p>{% endif %}
     {% if product.stock %}
     <form method="post" action="{% url 'cart_add' product.pk %}" class="buy-form">
       {% csrf_token %}

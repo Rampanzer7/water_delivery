@@ -11,7 +11,7 @@
     <label for="status">Статус</label>
     <select id="status" name="status">
       <option value="">Все</option>
-      {% for value, label in statuses %}<option value="{{ value }}" {% if status==value %} selected{% endif %}>{{ label
+      {% for value, label in statuses %}<option value="{{ value }}" {% if status == value %} selected{% endif %}>{{ label
         }}</option>{% endfor %}
     </select>
   </div>
@@ -19,7 +19,7 @@
     <label for="district">Район</label>
     <select id="district" name="district">
       <option value="">Все</option>
-      {% for item in districts %}<option value="{{ item.pk }}" {% if district==item.pk %} selected{% endif %}>{{
+      {% for item in districts %}<option value="{{ item.pk }}" {% if district == item.pk %} selected{% endif %}>{{
         item.name }}</option>{% endfor %}
     </select>
   </div>
@@ -30,7 +30,7 @@
   <div class="field">
     <label for="sort">Сортировка</label>
     <select id="sort" name="sort">
-      {% for value, label in sort_options %}<option value="{{ value }}" {% if sort==value %} selected{% endif %}>{{
+      {% for value, label in sort_options %}<option value="{{ value }}" {% if sort == value %} selected{% endif %}>{{
         label }}</option>{% endfor %}
     </select>
   </div>

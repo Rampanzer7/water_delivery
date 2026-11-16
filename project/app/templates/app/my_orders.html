@@ -7,14 +7,14 @@
     <label for="status">Статус</label>
     <select id="status" name="status">
       <option value="">Все</option>
-      {% for value, label in statuses %}<option value="{{ value }}" {% if status==value %} selected{% endif %}>{{ label
+      {% for value, label in statuses %}<option value="{{ value }}" {% if status == value %} selected{% endif %}>{{ label
         }}</option>{% endfor %}
     </select>
   </div>
   <div class="field">
     <label for="sort">Сортировка</label>
     <select id="sort" name="sort">
-      {% for value, label in sort_options %}<option value="{{ value }}" {% if sort==value %} selected{% endif %}>{{
+      {% for value, label in sort_options %}<option value="{{ value }}" {% if sort == value %} selected{% endif %}>{{
         label }}</option>{% endfor %}
     </select>
   </div>
