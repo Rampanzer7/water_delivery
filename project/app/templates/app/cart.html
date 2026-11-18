@@ -1,44 +1,139 @@
 {% extends 'base.html' %}
-{% block title %}Корзина{% endblock %}
+{% load static %}
+
+{% block title %}Корзина | Святой Источник{% endblock %}
+
 {% block content %}
-<h1>Корзина</h1>
-{% if lines %}
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th>Товар</th>
-        <th>Цена</th>
-        <th>Количество</th>
-        <th>Сумма</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for product, quantity, subtotal in lines %}
-      <tr>
-        <td>{{ product.name }}</td>
-        <td>{{ product.price|floatformat:"-2" }} ₽</td>
-        <td>
-          <form class="inline-form" method="post" action="{% url 'cart_update' product.pk %}">
-            {% csrf_token %}
-            <label class="visually-hidden" for="cart-{{ product.pk }}">Количество</label>
-            <input id="cart-{{ product.pk }}" type="number" name="quantity" value="{{ quantity }}" min="0"
-              max="{{ product.stock }}">
-            <button class="button small" type="submit">Обновить</button>
-          </form>
-        </td>
-        <td>{{ subtotal|floatformat:"-2" }} ₽</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+<div class="wire-container wire-page-container">
+  <nav class="wire-breadcrumbs" aria-label="Хлебные крошки">
+    <a href="{% url 'home' %}">Главная</a> / <a href="{% url 'catalog' %}">Каталог</a> / <span>Корзина</span>
+  </nav>
+
+  <header class="wire-page-header">
+    <h1 class="wire-page-title">Корзина</h1>
+    <p class="wire-page-subtitle">Проверьте состав заказа перед переходом к оформлению</p>
+  </header>
+
+  {% if lines %}
+  <div class="wire-cart-layout">
+    <div class="wire-cart-main-col">
+      <div class="wire-table-card">
+        <table class="wire-table wire-cart-table">
+          <thead>
+            <tr>
+              <th>Товар</th>
+              <th>Цена</th>
+              <th style="min-width: 140px;">Количество</th>
+              <th>Сумма</th>
+              <th style="width: 44px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for product, quantity, subtotal in lines %}
+            <tr>
+              <td>
+                <div class="wire-cart-product-cell">
+                  <div class="wire-cart-thumb-box">
+                    {% if product.kind == 'cooler' or 'кулер' in product.name|lower %}
+                    <img src="{% static 'images/cooler.jpeg' %}" alt="{{ product.name }}" width="44" height="44" class="wire-cart-thumb">
+                    {% else %}
+                    <img src="{% static 'images/bottle.jpeg' %}" alt="{{ product.name }}" width="44" height="44" class="wire-cart-thumb">
+                    {% endif %}
+                  </div>
+                  <div class="wire-cart-product-info">
+                    <a href="{% url 'product_detail' product.pk %}" class="wire-cart-product-title">{{ product.name }}</a>
+                    <span class="wire-cart-product-sub">
+                      {% if product.kind == 'water' %}
+                        {% if product.volume %}{{ product.volume|floatformat:"-1" }} л{% else %}19 л{% endif %}
+                      {% else %}
+                        Оборудование
+                      {% endif %}
+                    </span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="wire-cart-unit-price">{{ product.price|floatformat:"-2" }} ₽</span>
+              </td>
+              <td>
+                <form class="wire-cart-qty-form" method="post" action="{% url 'cart_update' product.pk %}">
+                  {% csrf_token %}
+                  <label class="visually-hidden" for="cart-{{ product.pk }}">Количество товара {{ product.name }}</label>
+                  <div class="wire-cart-qty-group">
+                    <input id="cart-{{ product.pk }}" type="number" name="quantity" value="{{ quantity }}" min="0" max="{{ product.stock }}" class="wire-input-control wire-cart-qty-input" aria-label="Количество">
+                    <button class="wire-btn wire-btn-sm wire-btn-secondary" type="submit" title="Обновить количество">Обновить</button>
+                  </div>
+                </form>
+              </td>
+              <td>
+                <strong class="wire-cart-subtotal">{{ subtotal|floatformat:"-2" }} ₽</strong>
+              </td>
+              <td style="text-align: center;">
+                <form method="post" action="{% url 'cart_update' product.pk %}" class="wire-cart-del-form">
+                  {% csrf_token %}
+                  <input type="hidden" name="quantity" value="0">
+                  <button type="submit" class="wire-cart-remove-btn" title="Удалить из корзины" aria-label="Удалить {{ product.name }}">&times;</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="wire-cart-nav-actions">
+        <a class="wire-btn wire-btn-secondary" href="{% url 'catalog' %}">← Продолжить покупки</a>
+      </div>
+    </div>
+
+    <div class="wire-cart-summary-col">
+      <div class="wire-checkout-box wire-cart-summary-box">
+        <h2 class="wire-checkout-box-title">Ваш заказ</h2>
+
+        <div class="wire-summary-row">
+          <span>Товары</span>
+          <span class="wire-summary-val">{{ totals.goods|floatformat:"-2" }} ₽</span>
+        </div>
+
+        {% if totals.bottles %}
+        <div class="wire-summary-row">
+          <span>Бутылей 19 л</span>
+          <span class="wire-summary-val">{{ totals.bottles }} шт.</span>
+        </div>
+        {% endif %}
+
+        <div class="wire-summary-row">
+          <span>Залог за тару</span>
+          <span class="wire-summary-val" style="color: var(--color-muted); font-size: 13px;">при оформлении</span>
+        </div>
+
+        <p class="wire-cart-deposit-note">
+          Залог за бутыли рассчитывается при оформлении и зависит от количества сдаваемой пустой тары.
+        </p>
+
+        <hr class="wire-summary-hr">
+
+        <div class="wire-summary-row wire-total-row">
+          <strong>Итого к оплате</strong>
+          <strong class="wire-total-val">{{ totals.goods|floatformat:"-2" }} ₽</strong>
+        </div>
+
+        <a href="{% url 'checkout' %}" class="wire-btn wire-btn-block wire-submit-btn" style="text-align: center; text-decoration: none; display: block;">
+          Перейти к оформлению
+        </a>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="wire-empty-state-box">
+    <div class="wire-empty-state-icon">🛒</div>
+    <h2 class="wire-empty-state-title">В корзине пока пусто</h2>
+    <p class="wire-empty-state-desc">Выберите природную артезианскую воду или оборудование в нашем каталоге с быстрой доставкой прямо к вашей двери.</p>
+    <div class="wire-empty-state-actions">
+      <a class="wire-btn" href="{% url 'catalog' %}">Выбрать воду</a>
+      <a class="wire-btn wire-btn-secondary" href="{% url 'coolers' %}">Каталог кулеров</a>
+    </div>
+  </div>
+  {% endif %}
 </div>
-<p class="price">Товары: {{ totals.goods|floatformat:"-2" }} ₽</p>
-<p class="muted">Залог за бутыли рассчитается при оформлении зависит от того, сколько пустой тары вы сдадите.</p>
-<p><a class="button" href="{% url 'checkout' %}">Оформить заказ</a> <a class="button secondary"
-    href="{% url 'catalog' %}">Продолжить покупки</a></p>
-{% else %}
-<p>В корзине пока пусто.</p>
-<p><a class="button" href="{% url 'catalog' %}">Выбрать воду</a></p>
-{% endif %}
 {% endblock %}

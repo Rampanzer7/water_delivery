@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Договоры аренды | Оператор | Святой Источник{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-page-container">
+  <header class="wire-page-header">
+    <h1 class="wire-page-title">Рабочее место оператора</h1>
+    <p class="wire-page-subtitle">Реестр договоров долгосрочной аренды кулеров</p>
+  </header>
+
+  <div class="wire-category-tags" style="margin-bottom: 24px;">
+    <a href="{% url 'operator_orders' %}" class="wire-pill">Заказы клиентов</a>
+    <a href="{% url 'operator_rentals' %}" class="wire-pill active">Договоры аренды</a>
+    <a href="{% url 'operator_service' %}" class="wire-pill">Заявки на санобработку</a>
+  </div>
+
+  <div class="wire-card" style="padding: 16px 20px; margin-bottom: 24px;">
+    <form method="get" style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+      <div style="flex: 1; min-width: 200px;">
+        <input type="text" name="q" value="{{ query|default:'' }}" placeholder="Поиск по клиенту или модели" class="wire-form-input" style="height: 38px;">
+      </div>
+      <div>
+        <select name="status" class="wire-form-input" style="height: 38px;">
+          <option value="">Все статусы</option>
+          <option value="active" {% if status == 'active' %}selected{% endif %}>Действует</option>
+          <option value="closed" {% if status == 'closed' %}selected{% endif %}>Расторгнут</option>
+        </select>
+      </div>
+      <button type="submit" class="wire-btn wire-btn-primary" style="height: 38px; padding: 0 16px;">Фильтр</button>
+    </form>
+  </div>
+
+  <div class="wire-table-card">
+    <table class="wire-table">
+      <thead>
+        <tr>
+          <th>№ Договора</th>
+          <th>Клиент</th>
+          <th>Модель кулера</th>
+          <th>Адрес установки</th>
+          <th>Дата начала</th>
+          <th>Аренда / Залог</th>
+          <th>Статус</th>
+          <th>Действие</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rental in rentals %}
+        <tr>
+          <td>
+            <a href="{% url 'operator_rental_detail' rental.pk %}" style="font-weight: 700; color: var(--color-primary); text-decoration: none;">
+              №{{ rental.pk }}
+            </a>
+          </td>
+          <td>
+            <strong>{{ rental.user.username }}</strong>
+            {% if rental.user.profile.phone %}<div style="font-size: 12px; color: var(--color-muted);">{{ rental.user.profile.phone }}</div>{% endif %}
+          </td>
+          <td>{{ rental.cooler.name }}</td>
+          <td>{{ rental.address }}</td>
+          <td>{{ rental.start_date|date:"d.m.Y" }}</td>
+          <td>
+            <strong>{{ rental.monthly_price|floatformat:"-2" }} ₽/мес</strong>
+            <div style="font-size: 12px; color: var(--color-muted);">Залог: {{ rental.deposit|floatformat:"-2" }} ₽</div>
+          </td>
+          <td>
+            {% if rental.status == 'active' %}
+            <span class="wire-badge wire-badge-green">Действует</span>
+            {% else %}
+            <span class="wire-badge wire-badge-gray">Расторгнут</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'operator_rental_detail' rental.pk %}" class="wire-btn wire-btn-secondary" style="font-size: 12px; padding: 6px 12px; text-decoration: none;">
+              Управление
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" style="text-align: center; color: var(--color-muted); padding: 32px;">Договоров не найдено.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

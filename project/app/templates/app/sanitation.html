@@ -1,26 +1,117 @@
 {% extends 'base.html' %}
-{% block title %}Санитарная обработка{% endblock %}
+{% load static %}
+
+{% block title %}Заявка на санитарную обработку кулера | Святой Источник{% endblock %}
+
 {% block content %}
-<h1>Санитарная обработка кулера</h1>
-<p>{{ rental.cooler.name }}, {{ rental.address }}</p>
-<form class="form-card" method="post" enctype="multipart/form-data">
-  {% csrf_token %}
-  {{ form.non_field_errors }}
-  {% include 'app/_form_fields.html' %}
-  <button class="button" type="submit">Отправить заявку</button>
-</form>
-<h2>Ваши заявки</h2>
-{% if requests %}
-<div class="cards">
-  {% for item in requests %}
-  <article class="card">
-    <img src="{{ item.photo.url }}" alt="Фото кулера к заявке №{{ item.pk }}">
-    <p>На {{ item.desired_date|date:"d.m.Y" }}</p>
-    <p class="muted">{{ item.get_status_display }}{% if item.comment %}. {{ item.comment }}{% endif %}</p>
-  </article>
-  {% endfor %}
+<div class="wire-container wire-page-container">
+  <nav class="wire-breadcrumbs" aria-label="Хлебные крошки" style="margin-bottom: 16px; font-size: 13px; color: var(--color-muted);">
+    <a href="{% url 'cabinet' %}" style="color: var(--color-muted); text-decoration: none;">Кабинет</a> /
+    <a href="{% url 'cabinet_rentals' %}" style="color: var(--color-muted); text-decoration: none;">Договоры аренды</a> /
+    <a href="{% url 'cabinet_rental_detail' rental.pk %}" style="color: var(--color-muted); text-decoration: none;">Договор №{{ rental.pk }}</a> /
+    <span style="color: var(--color-text);">Санитарная обработка</span>
+  </nav>
+  <h1 class="wire-page-title">Заявка на санитарную обработку</h1>
+  <p class="wire-page-subtitle">Кулер «{{ rental.cooler.name }}» &bull; {{ rental.address }}</p>
+
+  <div class="wire-profile-layout">
+    <aside class="wire-profile-sidebar desktop-only" aria-label="Меню личного кабинета">
+      <div class="wire-profile-menu-box">
+        <h2 class="wire-profile-menu-title">Мой кабинет</h2>
+        <nav class="wire-profile-nav-list">
+          <a href="{% url 'cabinet' %}" class="wire-profile-link">Профиль</a>
+          <a href="{% url 'cabinet_addresses' %}" class="wire-profile-link">Адреса доставки</a>
+          <a href="{% url 'cabinet_orders' %}" class="wire-profile-link">История заказов</a>
+          <a href="{% url 'cabinet_balance' %}" class="wire-profile-link">Баланс тары</a>
+          <a href="{% url 'cabinet_rentals' %}" class="wire-profile-link active">Договоры аренды</a>
+          <a href="{% url 'cabinet_schedules' %}" class="wire-profile-link">Регулярная доставка</a>
+          <form method="post" action="{% url 'logout' %}" class="wire-profile-logout-form">
+            {% csrf_token %}
+            <button type="submit" class="wire-profile-link wire-logout-link">Выход</button>
+          </form>
+        </nav>
+      </div>
+    </aside>
+
+    <div class="wire-profile-content">
+      <div class="wire-card" style="padding: 32px; max-width: 640px; margin-bottom: 32px;">
+        <h2 style="font-size: 18px; color: var(--color-navy); margin-top: 0; margin-bottom: 8px;">Форма вызова мастера</h2>
+        <p style="font-size: 14px; color: var(--color-muted); margin-bottom: 20px;">Мастер проведёт полную антибактериальную очистку, промывку баков и дезинфекцию кранов.</p>
+
+        {% if form.non_field_errors %}
+        <div class="wire-alert wire-alert-error" role="alert">
+          {% for error in form.non_field_errors %}
+          <p>{{ error }}</p>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="wire-auth-form" novalidate>
+          {% csrf_token %}
+
+          <div class="wire-form-group">
+            <label for="id_desired_date" class="wire-form-label">Желаемая дата визита мастера</label>
+            <input type="date" name="desired_date" id="id_desired_date" class="wire-form-input {% if form.desired_date.errors %}wire-input-error{% endif %}" value="{{ form.desired_date.value|default:'' }}" required>
+            {% if form.desired_date.errors %}
+            <span class="wire-field-error">{{ form.desired_date.errors.0 }}</span>
+            {% endif %}
+          </div>
+
+          <div class="wire-form-group">
+            <label for="id_photo" class="wire-form-label">Фото кулера перед чисткой (до 2 МБ, JPG/PNG)</label>
+            <input type="file" name="photo" id="id_photo" accept="image/jpeg,image/png,image/webp" class="wire-form-input {% if form.photo.errors %}wire-input-error{% endif %}" required>
+            {% if form.photo.errors %}
+            <span class="wire-field-error">{{ form.photo.errors.0 }}</span>
+            {% endif %}
+            <div style="font-size: 12px; color: var(--color-muted); margin-top: 4px;">Сфотографируйте текущее состояние аппарата и кранов</div>
+          </div>
+
+          <div class="wire-form-group">
+            <label for="id_comment" class="wire-form-label">Примечание или пожелания (необязательно)</label>
+            <input type="text" name="comment" id="id_comment" maxlength="200" class="wire-form-input" value="{{ form.comment.value|default:'' }}" placeholder="Например: удобнее в первой половине дня">
+            {% if form.comment.errors %}
+            <span class="wire-field-error">{{ form.comment.errors.0 }}</span>
+            {% endif %}
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-top: 16px;">
+            <button type="submit" class="wire-btn wire-btn-primary" style="padding: 12px 24px;">Отправить заявку</button>
+            <a href="{% url 'cabinet_rental_detail' rental.pk %}" class="wire-btn wire-btn-secondary" style="text-decoration: none; padding: 12px 20px;">Отмена</a>
+          </div>
+        </form>
+      </div>
+
+      <div class="wire-card" style="padding: 24px;">
+        <h3 style="font-size: 18px; color: var(--color-navy); margin-top: 0; margin-bottom: 16px;">Ранее поданные заявки</h3>
+        {% if requests %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px;">
+          {% for item in requests %}
+          <div style="border: 1px solid var(--color-border-light); border-radius: 8px; padding: 16px; background: #ffffff;">
+            {% if item.photo %}
+            <div style="width: 100%; height: 140px; overflow: hidden; border-radius: 6px; margin-bottom: 10px; background: #f0f0f0;">
+              <img src="{{ item.photo.url }}" alt="Фото кулера к заявке №{{ item.pk }}" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            {% endif %}
+            <div style="font-weight: 700; color: var(--color-navy); margin-bottom: 4px;">Заявка №{{ item.pk }}</div>
+            <div style="font-size: 13px; color: var(--color-muted); margin-bottom: 8px;">Дата визита: {{ item.desired_date|date:"d.m.Y" }}</div>
+            <div>
+              {% if item.status == 'done' %}
+              <span class="wire-badge wire-badge-green">Выполнена</span>
+              {% else %}
+              <span class="wire-badge wire-badge-blue">Ожидает визита</span>
+              {% endif %}
+            </div>
+            {% if item.comment %}
+            <div style="font-size: 13px; color: var(--color-text); margin-top: 8px;">«{{ item.comment }}»</div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p style="font-size: 14px; color: var(--color-muted); margin: 0;">По этому кулеру ещё не было заявок на обработку.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 </div>
-{% else %}
-<p>Заявок пока нет.</p>
-{% endif %}
 {% endblock %}

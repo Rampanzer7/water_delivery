@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} | Администрирование{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-page-container">
+  <div style="margin-bottom: 20px;">
+    <a href="{% url 'manage_products' %}" class="wire-btn wire-btn-secondary" style="font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+      ← Назад к каталогу товаров
+    </a>
+  </div>
+
+  <header class="wire-page-header">
+    <h1 class="wire-page-title">{{ title }}</h1>
+    <p class="wire-page-subtitle">Заполните поля карточки товара. Фотография должна быть формата JPEG или PNG размером до 2 МБ.</p>
+  </header>
+
+  <div class="wire-card" style="max-width: 680px; padding: 32px;">
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+      <div style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;">
+        {{ form.non_field_errors }}
+      </div>
+      {% endif %}
+
+      <div class="wire-form-group">
+        <label for="{{ form.name.id_for_label }}" class="wire-form-label">{{ form.name.label }}</label>
+        <input type="text" name="{{ form.name.name }}" id="{{ form.name.id_for_label }}"
+               value="{{ form.name.value|default:'' }}" class="wire-form-input" placeholder="Например: Вода «Святой Источник» 19 л">
+        {% if form.name.errors %}<p class="wire-form-error">{{ form.name.errors.0 }}</p>{% endif %}
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="wire-form-group">
+          <label for="{{ form.kind.id_for_label }}" class="wire-form-label">{{ form.kind.label }}</label>
+          <select name="{{ form.kind.name }}" id="{{ form.kind.id_for_label }}" class="wire-form-input">
+            {% for val, label in form.kind.field.choices %}
+            <option value="{{ val }}" {% if form.kind.value == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+          {% if form.kind.errors %}<p class="wire-form-error">{{ form.kind.errors.0 }}</p>{% endif %}
+        </div>
+
+        <div class="wire-form-group">
+          <label for="{{ form.volume.id_for_label }}" class="wire-form-label">{{ form.volume.label }} (л)</label>
+          <input type="number" step="0.1" name="{{ form.volume.name }}" id="{{ form.volume.id_for_label }}"
+                 value="{{ form.volume.value|default:'' }}" class="wire-form-input" placeholder="19.0">
+          {% if form.volume.errors %}<p class="wire-form-error">{{ form.volume.errors.0 }}</p>{% endif %}
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+        <div class="wire-form-group">
+          <label for="{{ form.price.id_for_label }}" class="wire-form-label">{{ form.price.label }} (₽)</label>
+          <input type="number" step="0.01" name="{{ form.price.name }}" id="{{ form.price.id_for_label }}"
+                 value="{{ form.price.value|default:'' }}" class="wire-form-input" placeholder="380.00">
+          {% if form.price.errors %}<p class="wire-form-error">{{ form.price.errors.0 }}</p>{% endif %}
+        </div>
+
+        <div class="wire-form-group">
+          <label for="{{ form.deposit_price.id_for_label }}" class="wire-form-label">{{ form.deposit_price.label }} (₽)</label>
+          <input type="number" step="0.01" name="{{ form.deposit_price.name }}" id="{{ form.deposit_price.id_for_label }}"
+                 value="{{ form.deposit_price.value|default:350 }}" class="wire-form-input" placeholder="350.00">
+          {% if form.deposit_price.errors %}<p class="wire-form-error">{{ form.deposit_price.errors.0 }}</p>{% endif %}
+        </div>
+
+        <div class="wire-form-group">
+          <label for="{{ form.stock.id_for_label }}" class="wire-form-label">{{ form.stock.label }} (шт.)</label>
+          <input type="number" name="{{ form.stock.name }}" id="{{ form.stock.id_for_label }}"
+                 value="{{ form.stock.value|default:100 }}" class="wire-form-input" placeholder="100">
+          {% if form.stock.errors %}<p class="wire-form-error">{{ form.stock.errors.0 }}</p>{% endif %}
+        </div>
+      </div>
+
+      <div class="wire-form-group">
+        <label for="{{ form.description.id_for_label }}" class="wire-form-label">{{ form.description.label }}</label>
+        <textarea name="{{ form.description.name }}" id="{{ form.description.id_for_label }}"
+                  rows="4" class="wire-form-input" style="height: auto; padding: 10px 14px;">{{ form.description.value|default:'' }}</textarea>
+        {% if form.description.errors %}<p class="wire-form-error">{{ form.description.errors.0 }}</p>{% endif %}
+      </div>
+
+      <div class="wire-form-group">
+        <label for="{{ form.photo.id_for_label }}" class="wire-form-label">
+          Фотография товара (JPEG / PNG, до 2 МБ)
+        </label>
+        {% if product.photo %}
+        <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 12px;">
+          <img src="{{ product.photo.url }}" alt="Текущее фото" style="width: 80px; height: 80px; object-fit: contain; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <span style="font-size: 13px; color: var(--color-slate);">Текущее изображение</span>
+        </div>
+        {% endif %}
+        <input type="file" name="{{ form.photo.name }}" id="{{ form.photo.id_for_label }}"
+               accept="image/jpeg,image/png,image/webp" class="wire-form-input" style="padding: 8px;">
+        {% if form.photo.errors %}<p class="wire-form-error">{{ form.photo.errors.0 }}</p>{% endif %}
+      </div>
+
+      <div class="wire-form-group" style="margin-top: 20px;">
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+          <input type="checkbox" name="{{ form.is_active.name }}" id="{{ form.is_active.id_for_label }}"
+                 {% if form.is_active.value or form.is_active.value is None %}checked{% endif %} style="width: 18px; height: 18px;">
+          <span style="font-size: 14px; font-weight: 600; color: var(--color-navy);">Товар опубликован в каталоге (доступен к заказу)</span>
+        </label>
+      </div>
+
+      <div style="margin-top: 32px; display: flex; gap: 12px;">
+        <button type="submit" class="wire-btn wire-btn-primary" style="padding: 12px 28px;">
+          Сохранить товар
+        </button>
+        <a href="{% url 'manage_products' %}" class="wire-btn wire-btn-secondary" style="padding: 12px 20px; text-decoration: none;">
+          Отмена
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

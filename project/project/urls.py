@@ -8,3 +8,7 @@ urlpatterns = [
     path('', include('app.urls')),
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
 ]
+
+handler403 = 'app.views.custom_403'
+handler404 = 'app.views.custom_404'
+

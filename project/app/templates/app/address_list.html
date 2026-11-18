@@ -1,31 +1,88 @@
 {% extends 'base.html' %}
-{% block title %}Мои адреса{% endblock %}
+{% load static %}
+
+{% block title %}Адреса доставки | Святой Источник{% endblock %}
+
 {% block content %}
-<h1>Адреса доставки</h1>
-<p><a class="button" href="{% url 'address_create' %}">Добавить адрес</a></p>
-{% if addresses %}
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th>Адрес</th>
-        <th>Как пройти</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for address in addresses %}
-      <tr>
-        <td>{{ address }}</td>
-        <td>{{ address.comment }}</td>
-        <td><a href="{% url 'address_edit' address.pk %}">Изменить</a> · <a
-            href="{% url 'address_delete' address.pk %}">Удалить</a></td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+<div class="wire-container wire-page-container">
+  <h1 class="wire-page-title">Адреса доставки</h1>
+  <p class="wire-page-subtitle">Ваши сохранённые адреса для быстрого оформления заказов и аренды кулеров</p>
+
+  <div class="wire-profile-layout">
+    <aside class="wire-profile-sidebar desktop-only" aria-label="Меню личного кабинета">
+      <div class="wire-profile-menu-box">
+        <h2 class="wire-profile-menu-title">Мой кабинет</h2>
+        <nav class="wire-profile-nav-list">
+          <a href="{% url 'cabinet' %}" class="wire-profile-link">Профиль</a>
+          <a href="{% url 'cabinet_addresses' %}" class="wire-profile-link active">Адреса доставки</a>
+          <a href="{% url 'cabinet_orders' %}" class="wire-profile-link">История заказов</a>
+          <a href="{% url 'cabinet_balance' %}" class="wire-profile-link">Баланс тары</a>
+          <a href="{% url 'cabinet_rentals' %}" class="wire-profile-link">Договоры аренды</a>
+          <a href="{% url 'cabinet_schedules' %}" class="wire-profile-link">Регулярная доставка</a>
+          <form method="post" action="{% url 'logout' %}" class="wire-profile-logout-form">
+            {% csrf_token %}
+            <button type="submit" class="wire-profile-link wire-logout-link">Выход</button>
+          </form>
+        </nav>
+      </div>
+    </aside>
+
+    <div class="wire-profile-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h2 style="font-size: 20px; color: var(--color-navy); margin: 0;">Список сохранённых адресов</h2>
+          <p style="font-size: 14px; color: var(--color-muted); margin: 4px 0 0 0;">Добавьте дом или офис для автоматического подбора интервалов</p>
+        </div>
+        <a href="{% url 'cabinet_address_create' %}" class="wire-btn wire-btn-primary" style="text-decoration: none; padding: 10px 20px;">
+          + Добавить адрес
+        </a>
+      </div>
+
+      {% if addresses %}
+      <div class="wire-table-card">
+        <table class="wire-table">
+          <thead>
+            <tr>
+              <th>Район города</th>
+              <th>Адрес (улица, дом, кв.)</th>
+              <th>Примечание / домофон</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for address in addresses %}
+            <tr>
+              <td>
+                <span class="wire-badge wire-badge-blue">{{ address.district.name }}</span>
+              </td>
+              <td>
+                <strong style="color: var(--color-navy);">ул. {{ address.street }}, д. {{ address.house }}</strong>
+                {% if address.flat %}, кв./оф. {{ address.flat }}{% endif %}
+              </td>
+              <td>{{ address.comment|default:"—" }}</td>
+              <td>
+                <div style="display: flex; gap: 8px;">
+                  <a href="{% url 'cabinet_address_edit' address.pk %}" class="wire-btn wire-btn-secondary" style="font-size: 12px; padding: 6px 10px; text-decoration: none;">
+                    Изменить
+                  </a>
+                  <a href="{% url 'cabinet_address_delete' address.pk %}" class="wire-btn" style="font-size: 12px; padding: 6px 10px; text-decoration: none; background: transparent; color: var(--color-error); border: 1px solid var(--color-error);">
+                    Удалить
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="wire-card" style="padding: 40px; text-align: center;">
+        <h3 style="font-size: 18px; color: var(--color-navy); margin-top: 0; margin-bottom: 8px;">Адресов пока нет</h3>
+        <p style="font-size: 14px; color: var(--color-muted); margin-bottom: 20px;">Добавьте хотя бы один адрес доставки, чтобы заказывать воду в 1 клик.</p>
+        <a href="{% url 'cabinet_address_create' %}" class="wire-btn wire-btn-primary" style="text-decoration: none;">Добавить первый адрес</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
 </div>
-{% else %}
-<p>Адресов пока нет.</p>
-{% endif %}
 {% endblock %}

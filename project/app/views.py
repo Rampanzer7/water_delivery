@@ -4,12 +4,14 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db.models import ProtectedError
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from . import services
-from .forms import AddressForm, OrderForm, RegisterForm, RentalForm, SanitationForm
+from .forms import AddressForm, DeliveryScheduleForm, OrderForm, RegisterForm, RentalForm, SanitationForm
 from .helpers import get_own, paginate, safe_next, to_decimal, to_int
-from .models import Address, ContainerBalance, Cooler, Order, Product, Rental
+from .models import (Address, ContainerBalance, Cooler, DeliverySchedule, Order,
+                     Product, Rental, SiteSetting)
 from .permissions import is_dispatcher
 
 PRODUCT_SORTS = [
@@ -41,9 +43,14 @@ def home(request):
 
 
 def catalog(request):
-    products = Product.objects.filter(is_active=True)
-    query = request.GET.get('q', '').strip()
     kind = request.GET.get('kind', '').strip()
+    query = request.GET.get('q', '').strip()
+    if kind == Product.COOLER or kind == 'cooler':
+        if query:
+            return redirect(f"{reverse('coolers')}?q={query}")
+        return redirect('coolers')
+
+    products = Product.objects.filter(is_active=True, kind=Product.WATER)
     volume = request.GET.get('volume', '').strip()
     price_min = to_decimal(request.GET.get('price_min'))
     price_max = to_decimal(request.GET.get('price_max'))
@@ -52,10 +59,6 @@ def catalog(request):
 
     if query:
         products = products.filter(search_text__contains=query.lower())
-    if kind in (Product.WATER, Product.COOLER):
-        products = products.filter(kind=kind)
-    else:
-        products = products.filter(kind__in=[Product.WATER, Product.COOLER])
     if volume:
         try:
             vol_val = float(volume.replace(',', '.'))
@@ -80,20 +83,26 @@ def catalog(request):
     return render(request, 'app/catalog.html', {
         'page': page,
         'query': query,
-        'kind': kind,
+        'kind': 'water',
         'volume': volume,
         'price_min': request.GET.get('price_min', ''),
         'price_max': request.GET.get('price_max', ''),
         'only_available': only_available,
         'sort': sort,
         'sort_options': PRODUCT_SORTS,
-        'kinds': [('water', 'Вода'), ('cooler', 'Кулеры')],
+        'kinds': [('water', 'Вода')],
         'total_count': products.count(),
     })
 
 
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk, is_active=True)
+    if product.kind == Product.COOLER or 'кулер' in product.name.lower():
+        clean_name = product.name.replace('Кулер ', '').strip()
+        cooler = Cooler.objects.filter(name__icontains=clean_name).first()
+        if cooler:
+            return redirect('cooler_detail', pk=cooler.pk)
+        return redirect('coolers')
     return render(request, 'app/product_detail.html', {'product': product})
 
 
@@ -164,7 +173,8 @@ def lines_of_order(order):
 
 def order_page(request, form, lines, order=None):
     returned = to_int(form['returned_bottles'].value()) if form.is_bound else 0
-    totals = services.calculate_order(lines, returned)
+    discount_percent = services.get_first_order_discount() if (request.user.is_authenticated and services.is_first_order(request.user) and not order) else 0
+    totals = services.calculate_order(lines, returned, discount_percent=discount_percent)
     return render(request, 'app/checkout.html', {
         'form': form,
         'order': order,
@@ -194,9 +204,19 @@ def checkout(request):
             request.session['cart'] = {}
             services.notify(request.user, f'Заказ №{order.pk} оформлен',
                             f'Доставим {order.delivery_date:%d.%m.%Y} в интервале {order.slot}. К оплате: {order.total} ₽.')
-            messages.success(request, f'Заказ №{order.pk} оформлен.')
-            return redirect('order_detail', pk=order.pk)
+            messages.success(request, f'Заказ №{order.pk} успешно оформлен!')
+            return redirect('order_done', pk=order.pk)
     return order_page(request, form, lines)
+
+
+order_new = checkout
+
+
+def order_done(request, pk):
+    order = get_object_or_404(Order.objects.select_related('address__district', 'slot', 'user'), pk=pk)
+    if request.user.is_authenticated and not can_view_order(request.user, order):
+        raise PermissionDenied
+    return render(request, 'app/order_done.html', {'order': order})
 
 
 def can_view_order(user, order):
@@ -319,7 +339,11 @@ def address_delete(request, pk):
 
 
 def coolers(request):
-    return render(request, 'app/coolers.html', {'coolers': Cooler.objects.all()})
+    coolers_qs = Cooler.objects.all()
+    query = request.GET.get('q', '').strip()
+    if query:
+        coolers_qs = coolers_qs.filter(name__icontains=query)
+    return render(request, 'app/coolers.html', {'coolers': coolers_qs, 'query': query})
 
 
 @login_required
@@ -366,3 +390,92 @@ def sanitation(request, pk):
         'form': form,
         'requests': rental.sanitations.all(),
     })
+
+
+def cooler_detail(request, pk):
+    cooler = get_object_or_404(Cooler, pk=pk)
+    return render(request, 'app/cooler_detail.html', {'cooler': cooler})
+
+
+def conditions(request):
+    settings_dict = {s.key: s.value for s in SiteSetting.objects.all()}
+    return render(request, 'app/conditions.html', {'settings': settings_dict})
+
+
+cabinet = profile
+
+
+@login_required
+def cabinet_balance(request):
+    balance_obj = ContainerBalance.objects.filter(user=request.user).first()
+    bottles = balance_obj.bottles if balance_obj else 0
+    deposit_sum = bottles * 350
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'app/cabinet_balance.html', {
+        'bottles': bottles,
+        'deposit_sum': deposit_sum,
+        'orders': orders,
+    })
+
+
+@login_required
+def cabinet_schedules(request):
+    schedules = DeliverySchedule.objects.filter(user=request.user).select_related('address__district', 'product', 'slot')
+    return render(request, 'app/cabinet_schedules.html', {'schedules': schedules})
+
+
+@login_required
+def cabinet_schedule_create(request):
+    if not Address.objects.filter(user=request.user).exists():
+        messages.info(request, 'Сначала добавьте адрес для регулярной доставки.')
+        return redirect('address_create')
+    form = DeliveryScheduleForm(request.POST or None, user=request.user)
+    if request.method == 'POST' and form.is_valid():
+        schedule = form.save(commit=False)
+        schedule.user = request.user
+        schedule.save()
+        messages.success(request, 'График регулярной доставки успешно добавлен.')
+        return redirect('cabinet_schedules')
+    return render(request, 'app/cabinet_schedule_form.html', {'form': form})
+
+
+@login_required
+def cabinet_schedule_toggle(request, pk):
+    schedule = get_object_or_404(DeliverySchedule, pk=pk, user=request.user)
+    schedule.is_active = not schedule.is_active
+    schedule.save(update_fields=['is_active'])
+    status_str = 'активирован' if schedule.is_active else 'приостановлен'
+    messages.success(request, f'График регулярной доставки {status_str}.')
+    return redirect('cabinet_schedules')
+
+
+@login_required
+def cabinet_schedule_delete(request, pk):
+    schedule = get_object_or_404(DeliverySchedule, pk=pk, user=request.user)
+    if request.method == 'POST':
+        schedule.delete()
+        messages.success(request, 'График доставки удален.')
+        return redirect('cabinet_schedules')
+    return render(request, 'app/confirm_delete.html', {
+        'title': f'Удалить график доставки {schedule.get_weekday_display()}?',
+        'back': 'cabinet_schedules',
+    })
+
+
+@login_required
+def cabinet_rental_detail(request, pk):
+    rental = get_own(Rental, pk, request.user)
+    sanitations = rental.sanitations.all().order_by('-created_at')
+    return render(request, 'app/cabinet_rental_detail.html', {
+        'rental': rental,
+        'sanitations': sanitations,
+    })
+
+
+def custom_403(request, exception=None):
+    return render(request, '403.html', status=403)
+
+
+def custom_404(request, exception=None):
+    return render(request, '404.html', status=404)
+

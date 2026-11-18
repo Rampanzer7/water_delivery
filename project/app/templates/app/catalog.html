@@ -1,26 +1,17 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{% if kind == 'water' %}Каталог воды 19 литров{% elif kind == 'cooler' %}Каталог кулеров{% else %}Каталог товаров{% endif %} | Святой Источник{% endblock %}
+{% block title %}Каталог воды 19 литров | Святой Источник{% endblock %}
 
 {% block content %}
 <div class="wire-container wire-page-container">
   <header class="wire-page-header">
-    <div class="wire-section-label">КАТАЛОГ</div>
-    {% if kind == 'water' %}
     <h1 class="wire-page-title">Вода 19 литров</h1>
     <p class="wire-page-subtitle">Чистая питьевая вода для дома и офиса с быстрой доставкой</p>
-    {% elif kind == 'cooler' %}
-    <h1 class="wire-page-title">Кулеры для воды</h1>
-    <p class="wire-page-subtitle">Напольные и настольные кулеры для комфортного розлива воды</p>
-    {% else %}
-    <h1 class="wire-page-title">Каталог товаров</h1>
-    <p class="wire-page-subtitle">Чистая вода 19 литров и современные кулеры с доставкой до двери</p>
-    {% endif %}
   </header>
 
   <div class="wire-catalog-layout">
-        <aside class="wire-sidebar desktop-only" aria-label="Фильтры каталога">
+    <aside class="wire-sidebar desktop-only" aria-label="Фильтры каталога">
       <div class="wire-sidebar-box">
         <h3 class="wire-sidebar-title">Фильтры</h3>
         <form method="get" action="{% url 'catalog' %}" class="wire-filter-form">
@@ -31,13 +22,10 @@
           <div class="wire-filter-group">
             <label for="filter-kind" class="wire-filter-label">Категория</label>
             <select id="filter-kind" name="kind" class="wire-filter-select">
-              <option value="" {% if not kind %}selected{% endif %}>Все категории</option>
-              <option value="water" {% if kind == 'water' %}selected{% endif %}>Вода</option>
-              <option value="cooler" {% if kind == 'cooler' %}selected{% endif %}>Кулеры</option>
+              <option value="water" selected>Вода 19 л</option>
             </select>
           </div>
 
-          {% if kind != 'cooler' %}
           <div class="wire-filter-group">
             <label for="filter-volume" class="wire-filter-label">Объём</label>
             <select id="filter-volume" name="volume" class="wire-filter-select">
@@ -45,7 +33,6 @@
               <option value="19" {% if volume == '19' or not volume %}selected{% endif %}>19 л</option>
             </select>
           </div>
-          {% endif %}
 
           <div class="wire-filter-group">
             <label for="filter-sort" class="wire-filter-label">Сортировка</label>
@@ -72,17 +59,16 @@
       </div>
     </aside>
 
-        <div class="wire-catalog-main">
-            <form method="get" action="{% url 'catalog' %}" class="wire-search-box">
-        {% if kind %}<input type="hidden" name="kind" value="{{ kind }}">{% endif %}
+    <div class="wire-catalog-main">
+      <form method="get" action="{% url 'catalog' %}" class="wire-search-box">
         {% if volume %}<input type="hidden" name="volume" value="{{ volume }}">{% endif %}
         <svg class="wire-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="11" cy="11" r="8"></circle>
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
-        <input type="search" name="q" value="{{ query }}" placeholder="Поиск: название товара" aria-label="Поиск по названию" class="wire-search-input">
+        <input type="search" name="q" value="{{ query }}" placeholder="Поиск: название воды" aria-label="Поиск по названию" class="wire-search-input">
         {% if query %}
-        <a href="{% url 'catalog' %}{% if kind %}?kind={{ kind }}{% endif %}" class="wire-search-clear-btn" aria-label="Очистить поиск">
+        <a href="{% url 'catalog' %}" class="wire-search-clear-btn" aria-label="Очистить поиск">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -99,9 +85,7 @@
       </form>
 
       <div class="wire-category-tags" aria-label="Категории товаров">
-        <a href="{% url 'catalog' %}{% if query %}?q={{ query }}{% endif %}" class="wire-pill {% if not kind %}active{% endif %}">Все товары</a>
-        <a href="{% url 'catalog' %}?kind=water{% if query %}&q={{ query }}{% endif %}" class="wire-pill {% if kind == 'water' %}active{% endif %}">Вода</a>
-        <a href="{% url 'catalog' %}?kind=cooler{% if query %}&q={{ query }}{% endif %}" class="wire-pill {% if kind == 'cooler' %}active{% endif %}">Кулеры</a>
+        <a href="{% url 'catalog' %}" class="wire-pill active">Каталог воды 19 л</a>
       </div>
 
       <div class="wire-catalog-grid">
@@ -109,34 +93,28 @@
         <article class="wire-card wire-catalog-card {% if product.stock <= 0 %}card-disabled{% endif %}">
           <div class="wire-card-img-box">
             <span class="wire-card-badge">{% if forloop.counter|divisibleby:2 %}Новинка{% else %}хит{% endif %}</span>
-            {% if product.kind == 'cooler' or 'кулер' in product.name|lower %}
-            <img src="{% static 'images/cooler.jpeg' %}" alt="{{ product.name }}" width="180" height="180" loading="lazy" class="wire-card-center-img">
-            {% else %}
             <img src="{% static 'images/bottle.jpeg' %}" alt="{{ product.name }}" width="180" height="180" loading="lazy" class="wire-card-center-img">
-            {% endif %}
           </div>
           <div class="wire-card-body">
             <h2 class="wire-card-title"><a href="{% url 'product_detail' product.pk %}">{{ product.name }}</a></h2>
-            <div class="wire-card-sub">{% if product.kind == 'cooler' or 'кулер' in product.name|lower %}Кулер{% elif product.volume %}{{ product.volume|floatformat:"-1" }} л{% else %}19 л{% endif %}</div>
+            <div class="wire-card-sub">{% if product.volume %}{{ product.volume|floatformat:"-1" }} л{% else %}19 л{% endif %}</div>
           </div>
           <div class="wire-card-action">
             {% if product.stock > 0 %}
-            <div class="wire-card-price">{% if product.kind == 'cooler' or 'кулер' in product.name|lower %}от {{ product.price|floatformat:"-2" }} ₽/мес{% else %}от {{ product.price|floatformat:"-2" }} ₽{% endif %}</div>
-            <form method="post" action="{% url 'cart_add' product.pk %}" class="wire-card-form">
-              {% csrf_token %}
-              <input type="hidden" name="quantity" value="1">
-              <button type="submit" class="wire-card-btn">Купить</button>
-            </form>
+            <div class="wire-card-price">от {{ product.price|floatformat:"-2" }} ₽</div>
             {% else %}
             <div class="wire-card-price wire-card-price-unavailable">Нет в наличии</div>
-            <button type="button" class="wire-card-btn" disabled>Купить</button>
             {% endif %}
+            <a class="wire-card-btn" href="{% url 'product_detail' product.pk %}">Купить</a>
           </div>
         </article>
         {% empty %}
         <div class="wire-empty-state">
-          <p>По запросу «{{ query }}» товаров не найдено.</p>
-          <a class="wire-btn" href="{% url 'catalog' %}">Показать все товары</a>
+          <p>{% if query %}По запросу «{{ query }}» товаров не найдено.{% else %}Товаров не найдено.{% endif %}</p>
+          <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 12px;">
+            <a class="wire-btn" href="{% url 'catalog' %}">Показать всю воду</a>
+            <a class="wire-btn wire-btn-secondary" href="{% url 'coolers' %}{% if query %}?q={{ query }}{% endif %}">Искать в каталоге кулеров</a>
+          </div>
         </div>
         {% endfor %}
       </div>

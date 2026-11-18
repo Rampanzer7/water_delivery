@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Регулярная доставка | Святой Источник{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-page-container">
+  <h1 class="wire-page-title">Регулярная доставка воды</h1>
+  <p class="wire-page-subtitle">Настройте автоматическую доставку любимой воды по удобным дням недели без лишних заказов</p>
+
+  <div class="wire-profile-layout">
+    <aside class="wire-profile-sidebar desktop-only" aria-label="Меню личного кабинета">
+      <div class="wire-profile-menu-box">
+        <h2 class="wire-profile-menu-title">Мой кабинет</h2>
+        <nav class="wire-profile-nav-list">
+          <a href="{% url 'cabinet' %}" class="wire-profile-link">Профиль</a>
+          <a href="{% url 'cabinet_addresses' %}" class="wire-profile-link">Адреса доставки</a>
+          <a href="{% url 'cabinet_orders' %}" class="wire-profile-link">История заказов</a>
+          <a href="{% url 'cabinet_balance' %}" class="wire-profile-link">Баланс тары</a>
+          <a href="{% url 'cabinet_rentals' %}" class="wire-profile-link">Договоры аренды</a>
+          <a href="{% url 'cabinet_schedules' %}" class="wire-profile-link active">Регулярная доставка</a>
+          <form method="post" action="{% url 'logout' %}" class="wire-profile-logout-form">
+            {% csrf_token %}
+            <button type="submit" class="wire-profile-link wire-logout-link">Выход</button>
+          </form>
+        </nav>
+      </div>
+    </aside>
+
+    <div class="wire-profile-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h2 style="font-size: 20px; color: var(--color-navy); margin: 0;">Мои графики доставки</h2>
+          <p style="font-size: 14px; color: var(--color-muted); margin: 4px 0 0 0;">Курьер приедет строго в указанный интервал времени</p>
+        </div>
+        <a href="{% url 'cabinet_schedule_create' %}" class="wire-btn wire-btn-primary" style="text-decoration: none; padding: 10px 20px;">
+          + Настроить график доставки
+        </a>
+      </div>
+
+      {% for schedule in schedules %}
+      <div class="wire-schedule-card">
+        <div style="flex: 1; min-width: 260px;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+            <strong style="font-size: 17px; color: var(--color-navy);">{{ schedule.get_weekday_display }}</strong>
+            {% if schedule.is_active %}
+            <span class="wire-badge wire-badge-green">Активен</span>
+            {% else %}
+            <span class="wire-badge wire-badge-gray">Приостановлен</span>
+            {% endif %}
+          </div>
+          <div style="font-size: 15px; color: var(--color-text); margin-bottom: 4px;">
+            <strong>{{ schedule.product.name }}</strong> — {{ schedule.quantity }} бутыл{{ schedule.quantity|pluralize:"ь,и,ей" }}
+          </div>
+          <div style="font-size: 13px; color: var(--color-muted); line-height: 1.4;">
+            Адрес: {{ schedule.address }} &bull; Интервал: {{ schedule.slot }}
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <form method="post" action="{% url 'cabinet_schedule_toggle' schedule.pk %}">
+            {% csrf_token %}
+            {% if schedule.is_active %}
+            <button type="submit" class="wire-btn wire-btn-secondary" style="font-size: 13px; padding: 8px 14px;">Приостановить</button>
+            {% else %}
+            <button type="submit" class="wire-btn wire-btn-primary" style="font-size: 13px; padding: 8px 14px;">Возобновить</button>
+            {% endif %}
+          </form>
+          <form method="post" action="{% url 'cabinet_schedule_delete' schedule.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="wire-btn" style="background: transparent; color: var(--color-error); border: 1px solid var(--color-error); font-size: 13px; padding: 8px 14px;" onclick="return confirm('Удалить этот регулярный график?');">
+              Удалить
+            </button>
+          </form>
+        </div>
+      </div>
+      {% empty %}
+      <div class="wire-card" style="padding: 40px; text-align: center;">
+        <h3 style="font-size: 18px; color: var(--color-navy); margin-top: 0; margin-bottom: 8px;">У вас пока нет регулярных графиков</h3>
+        <p style="font-size: 14px; color: var(--color-muted); margin-bottom: 20px;">Настройте расписание, чтобы свежая вода 19 л доставлялась вовремя без необходимости оформлять заказ вручную каждый раз.</p>
+        <a href="{% url 'cabinet_schedule_create' %}" class="wire-btn wire-btn-primary" style="text-decoration: none;">Создать график доставки</a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

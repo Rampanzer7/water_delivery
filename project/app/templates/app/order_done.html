@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Заказ оформлен | Святой Источник{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-auth-container">
+  <div class="wire-auth-card" style="max-width: 540px; text-align: center;">
+    <div style="width: 64px; height: 64px; background: var(--color-success-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 16px auto; color: var(--color-success);">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    </div>
+    <h1 class="wire-auth-title" style="margin-bottom: 8px;">Заказ №{{ order.pk }} оформлен!</h1>
+    <p class="wire-auth-subtitle" style="margin-bottom: 24px; font-weight: 500; color: var(--color-navy);">Заказ ждёт подтверждения оператором</p>
+
+    <div style="background: var(--color-bg); border: 1px solid var(--color-border-light); border-radius: 8px; padding: 20px; text-align: left; margin-bottom: 24px; font-size: 14px; line-height: 1.6;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span style="color: var(--color-muted);">Дата доставки:</span>
+        <strong>{{ order.delivery_date|date:"j E Y" }}</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span style="color: var(--color-muted);">Интервал времени:</span>
+        <strong>{{ order.slot }}</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span style="color: var(--color-muted);">Адрес доставки:</span>
+        <strong>{{ order.address }}</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span style="color: var(--color-muted);">Заказано бутылей 19 л:</span>
+        <strong>{{ order.bottles_total }} шт.</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span style="color: var(--color-muted);">Сдаётся пустых бутылей:</span>
+        <strong>{{ order.returned_bottles }} шт.</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span style="color: var(--color-muted);">Залог за тару:</span>
+        <strong>{{ order.deposit_total|floatformat:"-2" }} ₽</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--color-border); font-size: 16px;">
+        <span style="color: var(--color-navy); font-weight: 700;">Итого к оплате:</span>
+        <strong style="color: var(--color-navy);">{{ order.total|floatformat:"-2" }} ₽</strong>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+      <a href="{% url 'cabinet_order_detail' order.pk %}" class="wire-btn wire-btn-primary" style="text-decoration: none;">Подробнее о заказе</a>
+      <a href="{% url 'cabinet_orders' %}" class="wire-btn wire-btn-secondary" style="text-decoration: none;">История заказов</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

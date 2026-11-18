@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Заказ №{{ order.pk }}: статус и курьер | Оператор{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-page-container">
+  <nav class="wire-breadcrumbs" aria-label="Хлебные крошки" style="margin-bottom: 16px; font-size: 13px; color: var(--color-muted);">
+    <a href="{% url 'operator_orders' %}" style="color: var(--color-muted); text-decoration: none;">Диспетчерская</a> /
+    <a href="{% url 'operator_orders' %}" style="color: var(--color-muted); text-decoration: none;">Заказы</a> /
+    <span style="color: var(--color-text);">Заказ №{{ order.pk }}</span>
+  </nav>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+    <h1 class="wire-page-title" style="margin: 0;">Заказ №{{ order.pk }}</h1>
+    <div>
+      {% if order.status == 'delivered' %}
+      <span class="wire-badge wire-badge-green" style="font-size: 14px; padding: 6px 14px;">Доставлен</span>
+      {% elif order.status == 'assigned' %}
+      <span class="wire-badge wire-badge-blue" style="font-size: 14px; padding: 6px 14px;">Передан водителю: {{ order.route_sheet.driver.username }}</span>
+      {% else %}
+      <span class="wire-badge wire-badge-gray" style="font-size: 14px; padding: 6px 14px;">Новый заказ</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; align-items: start; margin-bottom: 24px;">
+    <div class="wire-card" style="padding: 24px;">
+      <h2 style="font-size: 18px; color: var(--color-navy); margin-top: 0; margin-bottom: 16px;">Данные клиента и доставки</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 14px; line-height: 1.6;">
+        <div>
+          <div style="color: var(--color-muted);">Клиент:</div>
+          <strong style="color: var(--color-navy);">{{ order.user.username }}</strong>
+        </div>
+        <div>
+          <div style="color: var(--color-muted);">Телефон:</div>
+          <strong>{{ order.user.profile.phone|default:"Не указан" }}</strong>
+        </div>
+        <div>
+          <div style="color: var(--color-muted);">Дата доставки:</div>
+          <strong>{{ order.delivery_date|date:"j E Y" }}</strong>
+        </div>
+        <div>
+          <div style="color: var(--color-muted);">Интервал доставки:</div>
+          <strong>{{ order.slot }}</strong>
+        </div>
+        <div style="grid-column: 1 / -1;">
+          <div style="color: var(--color-muted);">Адрес доставки:</div>
+          <strong>{{ order.address }}</strong>
+          <span class="wire-badge wire-badge-blue" style="margin-left: 8px;">{{ order.address.district.name }}</span>
+        </div>
+        {% if order.comment %}
+        <div style="grid-column: 1 / -1;">
+          <div style="color: var(--color-muted);">Примечание клиента:</div>
+          <div>{{ order.comment }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="wire-card" style="padding: 24px;">
+      <h2 style="font-size: 18px; color: var(--color-navy); margin-top: 0; margin-bottom: 16px;">Назначение курьера</h2>
+      {% if order.status == 'new' %}
+      <p style="font-size: 14px; color: var(--color-muted); margin-bottom: 16px;">Заказ ожидает передачи в рейс экспедитора на дату доставки.</p>
+      <form method="post" action="{% url 'operator_order_assign' order.pk %}" class="wire-auth-form">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <div class="wire-form-group">
+          <label for="id_driver" class="wire-form-label">Выберите водителя-курьера</label>
+          <select name="driver" id="id_driver" class="wire-form-input" required>
+            {% for drv in drivers %}
+            <option value="{{ drv.pk }}">{{ drv.username }} ({{ drv.get_full_name|default:"Водитель" }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="wire-btn wire-btn-primary" style="margin-top: 8px;">Передать курьеру</button>
+      </form>
+      {% else %}
+      <div style="font-size: 14px; line-height: 1.6;">
+        <div style="color: var(--color-muted);">Назначенный водитель:</div>
+        <strong style="font-size: 16px; color: var(--color-navy);">{{ order.route_sheet.driver.username }}</strong>
+        <div style="margin-top: 8px; color: var(--color-muted);">Дата рейса: {{ order.route_sheet.date|date:"d.m.Y" }}</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="wire-table-card" style="margin-bottom: 24px;">
+    <div style="padding: 16px 20px; border-bottom: 1px solid var(--color-border-light);">
+      <h3 style="margin: 0; font-size: 16px; color: var(--color-navy);">Спецификация товаров и расчёт</h3>
+    </div>
+    <table class="wire-table">
+      <thead>
+        <tr>
+          <th>Позиция</th>
+          <th>Цена на момент заказа</th>
+          <th>Количество</th>
+          <th>Сумма</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td><strong style="color: var(--color-navy);">{{ item.product.name }}</strong></td>
+          <td>{{ item.price|floatformat:"-2" }} ₽</td>
+          <td>{{ item.quantity }} шт.</td>
+          <td><strong>{{ item.subtotal|floatformat:"-2" }} ₽</strong></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div style="padding: 16px 20px; background: #fafbfc; border-top: 1px solid var(--color-border-light); font-size: 14px; display: flex; justify-content: flex-end; gap: 32px;">
+      <div>Стоимость товаров: <strong>{{ order.goods_total|floatformat:"-2" }} ₽</strong></div>
+      <div>Залог за тару ({{ order.missing_bottles }} шт.): <strong>{{ order.deposit_total|floatformat:"-2" }} ₽</strong></div>
+      <div style="font-size: 16px; color: var(--color-navy);">Итого: <strong>{{ order.total|floatformat:"-2" }} ₽</strong></div>
+    </div>
+  </div>
+
+  <div>
+    <a href="{% url 'operator_orders' %}" class="wire-btn wire-btn-secondary" style="text-decoration: none;">&larr; Назад к списку заказов</a>
+  </div>
+</div>
+{% endblock %}

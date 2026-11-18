@@ -160,7 +160,6 @@ main.container {
   color: var(--text);
 }
 
-/* Hero Section */
 .hero-section {
   background: #ffffff;
   border: 1px solid var(--line);
@@ -784,11 +783,7 @@ td input[type='number'] {
 }
 
 
-/* ==========================================================================
-   UI-kit 01/02 Color System & Design Tokens
-   ========================================================================== */
 :root {
-  /* UI-kit Color System (from UI-kit обновленные цвета) */
   --color-primary: #245BDB;
   --color-primary-hover: #1f4fc2;
   --color-primary-light: #3f75f3;
@@ -806,7 +801,6 @@ td input[type='number'] {
   --color-error: #C93636;
   --color-error-bg: #FCE8E8;
 
-  /* Aliases */
   --wire-bg: var(--color-bg);
   --wire-gray: var(--color-surface);
   --wire-gray-light: var(--color-sky);
@@ -816,7 +810,6 @@ td input[type='number'] {
   --wire-text-muted: var(--color-muted);
   --wire-font: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 
-  /* Spacing */
   --spacing-8: 8px;
   --spacing-16: 16px;
   --spacing-24: 24px;
@@ -827,7 +820,6 @@ td input[type='number'] {
   --radius-md: 8px;
   --radius-lg: 12px;
 
-  /* Shadows */
   --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.05);
   --shadow-sm: 0 1px 3px rgba(23, 55, 91, 0.06);
   --shadow-md: 0 4px 14px rgba(23, 55, 91, 0.08);
@@ -842,7 +834,6 @@ body {
   line-height: 24px;
 }
 
-/* Typography per UI-kit Inter */
 h1, .wire-page-title, .wire-hero-title {
   font-family: var(--wire-font);
   font-size: 40px;
@@ -872,16 +863,16 @@ h3, .wire-profile-menu-title {
 }
 
 .wire-caption, .wire-section-label {
+  display: none !important;
   font-family: var(--wire-font);
   font-size: 12px;
   font-weight: 600;
   line-height: 16px;
   letter-spacing: 0.8px;
-  color: var(--color-primary);
+  color: var(--color-navy);
   text-transform: uppercase;
 }
 
-/* Visibility helpers */
 .desktop-only {
   display: block;
 }
@@ -905,7 +896,6 @@ h3, .wire-profile-menu-title {
   border: 0;
 }
 
-/* Containers per UI-kit (1200px desktop, gutter 24px) */
 .wire-container {
   width: 100%;
   max-width: 1200px;
@@ -914,7 +904,6 @@ h3, .wire-profile-menu-title {
   box-sizing: border-box;
 }
 
-/* Header */
 .wire-header {
   background: #ffffff;
   border-bottom: 1px solid var(--color-border-light);
@@ -997,7 +986,6 @@ h3, .wire-profile-menu-title {
   gap: 20px;
 }
 
-/* UI-kit 04 Button Component & States */
 .wire-btn {
   display: inline-flex;
   align-items: center;
@@ -1074,7 +1062,6 @@ h3, .wire-profile-menu-title {
   display: none;
 }
 
-/* Hero Section */
 .wire-hero-section {
   background: var(--color-bg);
   border-bottom: 1px solid var(--color-border-light);
@@ -1089,9 +1076,10 @@ h3, .wire-profile-menu-title {
 }
 
 .wire-hero-label {
+  display: none !important;
   font-size: 12px;
   letter-spacing: 0.8px;
-  color: var(--color-primary);
+  color: var(--color-navy);
   text-transform: uppercase;
   font-weight: 600;
   margin-bottom: 14px;
@@ -1120,6 +1108,28 @@ h3, .wire-profile-menu-title {
 
 .wire-hero-actions .wire-btn {
   padding: 11px 24px;
+}
+
+.wire-hero-actions .wire-btn-cooler,
+.wire-btn-cooler {
+  background: var(--color-navy);
+  border: 1px solid var(--color-navy);
+  color: #ffffff;
+}
+
+.wire-hero-actions .wire-btn-cooler:hover,
+.wire-btn-cooler:hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(23, 55, 91, 0.3);
+}
+
+.wire-hero-actions .wire-btn-cooler:active,
+.wire-btn-cooler:active {
+  background: #112842;
+  border-color: #112842;
+  color: #ffffff;
 }
 
 .wire-hero-actions .wire-btn-secondary {
@@ -1198,7 +1208,7 @@ h3, .wire-profile-menu-title {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--color-primary);
+  color: var(--color-navy);
 }
 
 .hero-badge-text {
@@ -1207,7 +1217,6 @@ h3, .wire-profile-menu-title {
   font-weight: 600;
 }
 
-/* Sections */
 .wire-section {
   padding: 44px 0 28px 0;
   background: transparent;
@@ -1218,9 +1227,10 @@ h3, .wire-profile-menu-title {
 }
 
 .wire-section-label {
+  display: none !important;
   font-size: 11px;
   letter-spacing: 0.8px;
-  color: var(--color-primary);
+  color: var(--color-navy);
   text-transform: uppercase;
   font-weight: 600;
   margin-bottom: 6px;
@@ -1240,7 +1250,6 @@ h3, .wire-profile-menu-title {
   margin: 0 0 24px 0;
 }
 
-/* Cards Grid */
 .wire-cards-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1274,6 +1283,24 @@ h3, .wire-profile-menu-title {
   transform: none;
   box-shadow: var(--shadow-sm);
   border-color: var(--color-border-light);
+}
+
+.wire-card.wire-card-static,
+.wire-card.wire-card-static:hover,
+.wire-card-static,
+.wire-card-static:hover {
+  transform: none !important;
+  box-shadow: var(--shadow-sm) !important;
+  border-color: var(--color-border-light) !important;
+  cursor: default !important;
+  transition: none !important;
+}
+
+.wire-card-static *,
+.wire-card-static *:hover,
+.wire-card-static h2,
+.wire-card-static h2:hover {
+  cursor: default !important;
 }
 
 .wire-card-img-box {
@@ -1335,7 +1362,6 @@ h3, .wire-profile-menu-title {
   min-height: 44px;
   margin: 0 0 4px 0;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1443,7 +1469,6 @@ h3, .wire-profile-menu-title {
   transform: none !important;
 }
 
-/* Promo Card ("Больше товаров") */
 .wire-promo-card {
   background: #ffffff;
   border: 1px solid var(--color-border-light);
@@ -1482,7 +1507,6 @@ h3, .wire-profile-menu-title {
   color: #ffffff;
 }
 
-/* Footer */
 .wire-footer {
   background: #ffffff;
   border-top: 1px solid var(--color-border-light);
@@ -1524,16 +1548,11 @@ h3, .wire-profile-menu-title {
   opacity: 0.85;
 }
 
-/* Full Catalog Layout */
 .catalog-full-section {
   border-top: 1px solid var(--color-border-light);
   background: var(--color-bg);
   padding: 32px 0 48px 0;
 }
-
-/* ==========================================================================
-   Pages & Layouts (Catalog, Detail, Checkout, Profile, Close Delivery)
-   ========================================================================== */
 
 .wire-page-container {
   padding-top: 32px;
@@ -1583,13 +1602,11 @@ h3, .wire-profile-menu-title {
   margin: 0 0 32px 0;
 }
 
-/* Shaded Box - White neutral card as requested */
 .wire-box-shaded {
   background: #ffffff !important;
   border: 1px solid var(--color-border-light) !important;
 }
 
-/* UI-kit 04 Input & Select Component States */
 .wire-input-control,
 .wire-select-control {
   width: 100%;
@@ -1660,7 +1677,6 @@ h3, .wire-profile-menu-title {
   border-radius: 8px;
 }
 
-/* Catalog Page Layout */
 .wire-catalog-layout {
   display: grid;
   grid-template-columns: 250px 1fr;
@@ -1775,7 +1791,6 @@ a.wire-link-action:hover {
   color: var(--color-error);
 }
 
-/* Search Bar */
 .wire-search-box {
   display: flex;
   align-items: center;
@@ -1841,7 +1856,6 @@ a.wire-link-action:hover {
   color: var(--color-navy);
 }
 
-/* Category Tags & Filter Pills */
 .wire-category-tags,
 .wire-filter-pills {
   display: flex;
@@ -1874,7 +1888,6 @@ a.wire-link-action:hover {
   box-shadow: 0 2px 6px rgba(36, 91, 219, 0.25);
 }
 
-/* Catalog Grid */
 .wire-catalog-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -2301,7 +2314,6 @@ a.wire-link-action:hover {
   margin: 0;
 }
 
-/* Profile Mobile Nav with UI-kit states */
 .wire-profile-nav-btn {
   display: flex;
   justify-content: space-between;
@@ -2530,7 +2542,6 @@ a.wire-link-action:hover {
   color: #ffffff;
 }
 
-/* Messages & Alerts */
 .messages {
   list-style: none;
   padding: 0;
@@ -2566,7 +2577,6 @@ a.wire-link-action:hover {
   color: var(--color-warning);
   border: 1px solid rgba(148, 85, 0, 0.25);
 }
-
 
 @media (max-width: 1024px) {
   .wire-container {
@@ -2944,4 +2954,460 @@ a.wire-link-action:hover {
     width: 100% !important;
   }
 }
+
+.wire-auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 240px);
+  padding: 40px 16px;
+  box-sizing: border-box;
+}
+
+.wire-auth-card {
+  width: 100%;
+  max-width: 460px;
+  margin: 0 auto;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border-light, #e4e7ec);
+  border-radius: var(--radius-lg, 12px);
+  padding: 36px 32px;
+  box-shadow: var(--shadow-md, 0 4px 14px rgba(23, 55, 91, 0.08));
+  box-sizing: border-box;
+}
+
+.wire-auth-title {
+  font-family: var(--wire-font);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-navy);
+  margin: 8px 0 6px 0;
+  text-align: center;
+}
+
+.wire-auth-subtitle {
+  font-size: 14px;
+  color: var(--color-muted);
+  text-align: center;
+  margin: 0 0 24px 0;
+  line-height: 20px;
+}
+
+.wire-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.wire-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.wire-form-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-navy);
+}
+
+.wire-form-input,
+.wire-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--color-border, #d0d5dd);
+  border-radius: var(--radius-md, 8px);
+  background: #ffffff;
+  color: var(--color-text, #17202f);
+  font-family: var(--wire-font);
+  font-size: 15px;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.wire-form-input:focus,
+.wire-input:focus {
+  outline: none;
+  border-color: var(--color-primary, #245bdb);
+  box-shadow: 0 0 0 3px rgba(36, 91, 219, 0.15);
+}
+
+.wire-input-error {
+  border-color: var(--color-error, #c93636) !important;
+}
+
+.wire-field-error {
+  font-size: 13px;
+  color: var(--color-error, #c93636);
+  margin-top: 2px;
+}
+
+.wire-btn-block {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 44px;
+}
+
+.wire-auth-footer {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-border-light, #e4e7ec);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
+.wire-auth-link {
+  color: var(--color-primary, #245bdb);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.wire-auth-link:hover {
+  text-decoration: underline;
+}
+
+.wire-alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.wire-alert-error {
+  background: var(--color-error-bg, #fce8e8);
+  border: 1px solid var(--color-error, #c93636);
+  color: var(--color-error, #c93636);
+}
+
+.wire-alert-success {
+  background: var(--color-success-bg, #e8f8f0);
+  border: 1px solid var(--color-success, #19a25a);
+  color: var(--color-success, #19a25a);
+}
+
+.wire-table-card {
+  background: #ffffff;
+  border: 1px solid var(--color-border-light);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 24px;
+}
+
+.wire-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+
+.wire-table th {
+  background: #f8fafc;
+  color: var(--color-navy);
+  font-weight: 600;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.wire-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-border-light);
+  color: var(--color-text);
+  vertical-align: middle;
+}
+
+.wire-table tr:last-child td {
+  border-bottom: none;
+}
+
+.wire-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.wire-badge-blue {
+  background: var(--color-sky);
+  color: var(--color-primary);
+}
+
+.wire-badge-green {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.wire-badge-gray {
+  background: #eef2f6;
+  color: var(--color-muted);
+}
+
+.wire-badge-orange {
+  background: #fef3e2;
+  color: #b56c00;
+}
+
+.wire-balance-hero {
+  background: linear-gradient(135deg, #17375B 0%, #245BDB 100%);
+  color: #ffffff;
+  border-radius: 12px;
+  padding: 32px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.wire-balance-hero-val {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 6px 0;
+}
+
+.wire-balance-hero-sub {
+  font-size: 15px;
+  opacity: 0.9;
+}
+
+.wire-schedule-card {
+  background: #ffffff;
+  border: 1px solid var(--color-border-light);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.wire-error-page {
+  text-align: center;
+  padding: 60px 20px;
+  max-width: 540px;
+  margin: 0 auto;
+}
+
+.wire-error-code {
+  font-size: 72px;
+  font-weight: 800;
+  color: var(--color-navy);
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+.wire-cart-layout {
+  display: grid;
+  grid-template-columns: 1.65fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.wire-cart-table {
+  width: 100%;
+}
+
+.wire-cart-table th {
+  padding: 14px 18px;
+}
+
+.wire-cart-table td {
+  padding: 16px 18px;
+}
+
+.wire-cart-product-cell {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.wire-cart-thumb-box {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  background: #f8fafc;
+  border: 1px solid var(--color-border-light);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.wire-cart-thumb {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.wire-cart-product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.wire-cart-product-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-navy);
+  text-decoration: none;
+  line-height: 1.3;
+}
+
+.wire-cart-product-title:hover {
+  color: var(--color-primary);
+}
+
+.wire-cart-product-sub {
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.wire-cart-unit-price {
+  font-size: 14px;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.wire-cart-qty-form {
+  margin: 0;
+}
+
+.wire-cart-qty-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wire-cart-qty-input {
+  width: 60px !important;
+  padding: 6px 8px !important;
+  font-size: 14px !important;
+  text-align: center;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  height: 36px;
+  box-sizing: border-box;
+}
+
+.wire-cart-subtotal {
+  font-size: 15px;
+  color: var(--color-navy);
+  white-space: nowrap;
+}
+
+.wire-cart-del-form {
+  margin: 0;
+  display: inline-block;
+}
+
+.wire-cart-remove-btn {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--color-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.wire-cart-remove-btn:hover {
+  color: #dc3545;
+  background: rgba(220, 53, 69, 0.08);
+}
+
+.wire-cart-nav-actions {
+  margin-top: 16px;
+}
+
+.wire-cart-summary-box {
+  position: sticky;
+  top: 24px;
+}
+
+.wire-cart-deposit-note {
+  font-size: 12px;
+  color: var(--color-muted);
+  line-height: 1.45;
+  margin: 10px 0 16px 0;
+}
+
+.wire-empty-state-box {
+  background: #ffffff;
+  border: 1px solid var(--color-border-light);
+  border-radius: 12px;
+  padding: 48px 24px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  max-width: 520px;
+  margin: 40px auto;
+}
+
+.wire-empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.wire-empty-state-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-navy);
+  margin: 0 0 10px 0;
+}
+
+.wire-empty-state-desc {
+  font-size: 14px;
+  color: var(--color-muted);
+  line-height: 1.5;
+  margin: 0 0 24px 0;
+}
+
+.wire-empty-state-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 860px) {
+  .wire-cart-layout {
+    grid-template-columns: 1fr;
+  }
+  .wire-cart-summary-box {
+    position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  .wire-cart-table th,
+  .wire-cart-table td {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+  .wire-cart-thumb-box {
+    display: none;
+  }
+  .wire-cart-qty-input {
+    width: 48px !important;
+    height: 32px;
+    padding: 2px 4px !important;
+  }
+}
+
 

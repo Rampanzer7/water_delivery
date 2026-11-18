@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Настройки системы | Панель администратора{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-page-container">
+  <header class="wire-page-header">
+    <h1 class="wire-page-title">Панель управления</h1>
+    <p class="wire-page-subtitle">Общие настройки сервиса доставки, скидки и условия обслуживания</p>
+  </header>
+
+  <div class="wire-category-tags" style="margin-bottom: 24px;">
+    <a href="{% url 'manage_settings' %}" class="wire-pill active">Настройки системы</a>
+    <a href="{% url 'manage_users' %}" class="wire-pill">Пользователи и роли</a>
+    <a href="{% url 'manage_products' %}" class="wire-pill">Каталог товаров</a>
+    <a href="{% url 'manage_coolers' %}" class="wire-pill">Аренда кулеров</a>
+    <a href="{% url 'manage_intervals' %}" class="wire-pill">Интервалы доставки</a>
+    <a href="{% url 'manage_districts' %}" class="wire-pill">Районы города</a>
+  </div>
+
+  <div class="wire-card" style="max-width: 680px; padding: 32px;">
+    <h2 style="font-size: 20px; font-weight: 700; color: var(--color-navy); margin-bottom: 8px;">Параметры заказов и доставки</h2>
+    <p style="font-size: 14px; color: var(--color-slate); margin-bottom: 24px;">Эти параметры применяются при расчёте корзины и отображаются клиентам на страницах оформления.</p>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+      <div style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;">
+        {{ form.non_field_errors }}
+      </div>
+      {% endif %}
+
+      <div class="wire-form-group">
+        <label for="{{ form.first_order_discount.id_for_label }}" class="wire-form-label">
+          {{ form.first_order_discount.label }}
+        </label>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <input type="number" name="{{ form.first_order_discount.name }}" id="{{ form.first_order_discount.id_for_label }}"
+                 value="{{ form.first_order_discount.value|default:10 }}" min="0" max="100" class="wire-form-input" style="max-width: 140px;">
+          <span style="font-size: 16px; font-weight: 600; color: var(--color-navy);">%</span>
+        </div>
+        <p class="wire-form-help">{{ form.first_order_discount.help_text }}</p>
+        {% if form.first_order_discount.errors %}
+        <p class="wire-form-error">{{ form.first_order_discount.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      <div class="wire-form-group">
+        <label for="{{ form.min_order_bottles.id_for_label }}" class="wire-form-label">
+          {{ form.min_order_bottles.label }}
+        </label>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <input type="number" name="{{ form.min_order_bottles.name }}" id="{{ form.min_order_bottles.id_for_label }}"
+                 value="{{ form.min_order_bottles.value|default:2 }}" min="1" max="20" class="wire-form-input" style="max-width: 140px;">
+          <span style="font-size: 15px; color: var(--color-slate);">шт. (от этого объема доставка бесплатная)</span>
+        </div>
+        {% if form.min_order_bottles.errors %}
+        <p class="wire-form-error">{{ form.min_order_bottles.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      <div class="wire-form-group">
+        <label for="{{ form.delivery_note.id_for_label }}" class="wire-form-label">
+          {{ form.delivery_note.label }}
+        </label>
+        <textarea name="{{ form.delivery_note.name }}" id="{{ form.delivery_note.id_for_label }}"
+                  rows="3" class="wire-form-input" style="height: auto; padding: 10px 14px;">{{ form.delivery_note.value|default:'' }}</textarea>
+        {% if form.delivery_note.errors %}
+        <p class="wire-form-error">{{ form.delivery_note.errors.0 }}</p>
+        {% endif %}
+      </div>
+
+      <div style="margin-top: 32px; display: flex; gap: 12px;">
+        <button type="submit" class="wire-btn wire-btn-primary" style="padding: 12px 28px;">
+          Сохранить изменения
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

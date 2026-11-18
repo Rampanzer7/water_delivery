@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Условия и контакты | Святой Источник{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-page-container">
+  <header class="wire-page-header">
+    <h1 class="wire-page-title">Условия и контакты</h1>
+    <p class="wire-page-subtitle">Всё о доставке воды, обороте тары, аренде кулеров и способах связи с нами</p>
+  </header>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-bottom: 40px;">
+    <div class="wire-card" style="padding: 28px;">
+      <h2 style="font-size: 20px; color: var(--color-navy); margin-top: 0; margin-bottom: 12px;">Условия доставки</h2>
+      <ul style="padding-left: 20px; line-height: 1.7; color: var(--color-text); margin: 0;">
+        <li>Бесплатная доставка при заказе от 2 бутылей воды 19 л.</li>
+        <li>Доставка осуществляется во все 6 районов города ежедневно.</li>
+        <li>Четыре удобных 3-часовых интервала: 09:00–12:00, 12:00–15:00, 15:00–18:00, 18:00–21:00.</li>
+        <li>Подъём на этаж до двери квартиры или офиса курьером.</li>
+      </ul>
+    </div>
+
+    <div class="wire-card" style="padding: 28px;">
+      <h2 style="font-size: 20px; color: var(--color-navy); margin-top: 0; margin-bottom: 12px;">Оборотная тара и залог</h2>
+      <ul style="padding-left: 20px; line-height: 1.7; color: var(--color-text); margin: 0;">
+        <li>Вода доставляется в экологически чистых многооборотных бутылях из поликарбоната 19 л.</li>
+        <li>При первом заказе вносится гарантийный залог за тару (350 ₽ за бутыль).</li>
+        <li>При повторных заказах пустые бутыли обмениваются на полные без доплаты залога.</li>
+        <li>При отказе от услуг и возврате исправных бутылей курьеру залог возвращается в полном объёме.</li>
+      </ul>
+    </div>
+
+    <div class="wire-card" style="padding: 28px;">
+      <h2 style="font-size: 20px; color: var(--color-navy); margin-top: 0; margin-bottom: 12px;">Аренда кулеров</h2>
+      <ul style="padding-left: 20px; line-height: 1.7; color: var(--color-text); margin: 0;">
+        <li>Широкий модельный ряд напольных и настольных кулеров Aqua от 320 ₽ в месяц.</li>
+        <li>Бесплатная доставка и установка кулера по указанному адресу.</li>
+        <li>Регулярная санитарная обработка и обслуживание раз в полгода.</li>
+        <li>Возможность подачи онлайн-заявки на санобработку прямо из личного кабинета с прикреплением фото.</li>
+      </ul>
+    </div>
+
+    <div class="wire-card" style="padding: 28px;">
+      <h2 style="font-size: 20px; color: var(--color-navy); margin-top: 0; margin-bottom: 12px;">Контакты службы заботы</h2>
+      <div style="line-height: 1.7; color: var(--color-text);">
+        <p style="margin: 0 0 8px 0;"><strong>Телефон горячей линии:</strong> <a href="tel:+78005553535" style="color: var(--color-primary); text-decoration: none; font-weight: 600;">+7 (800) 555-35-35</a></p>
+        <p style="margin: 0 0 8px 0;"><strong>Электронная почта:</strong> <a href="mailto:support@svyatoy-istochnik.ru" style="color: var(--color-primary); text-decoration: none;">support@svyatoy-istochnik.ru</a></p>
+        <p style="margin: 0 0 8px 0;"><strong>Режим работы:</strong> ежедневно с 08:00 до 20:00 без выходных</p>
+        <p style="margin: 0;"><strong>Главный распределительный центр:</strong> г. Москва, ул. Ленина, д. 42</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="wire-static-cta" style="background: var(--color-sky); border-radius: 12px; padding: 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+    <div>
+      <h3 style="margin: 0 0 6px 0; color: var(--color-navy);">Готовы сделать заказ?</h3>
+      <p style="margin: 0; color: var(--color-muted);">Выберите артезианскую воду или надежный кулер в каталоге прямо сейчас.</p>
+    </div>
+    <div style="display: flex; gap: 12px;">
+      <a href="{% url 'catalog' %}" class="wire-btn wire-btn-primary">Каталог воды</a>
+      <a href="{% url 'coolers' %}" class="wire-btn wire-btn-secondary">Каталог кулеров</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,12 +1,106 @@
 {% extends 'base.html' %}
-{% block title %}{{ title }}{% endblock %}
+{% load static %}
+
+{% block title %}{{ title }} | Святой Источник{% endblock %}
+
 {% block content %}
-<h1>{{ title }}</h1>
-<form class="form-card" method="post">
-  {% csrf_token %}
-  {{ form.non_field_errors }}
-  {% include 'app/_form_fields.html' %}
-  <button class="button" type="submit">Сохранить</button>
-  <a class="button secondary" href="{% url 'address_list' %}">Отмена</a>
-</form>
+<div class="wire-container wire-page-container">
+  <nav class="wire-breadcrumbs" aria-label="Хлебные крошки" style="margin-bottom: 16px; font-size: 13px; color: var(--color-muted);">
+    <a href="{% url 'cabinet' %}" style="color: var(--color-muted); text-decoration: none;">Кабинет</a> /
+    <a href="{% url 'cabinet_addresses' %}" style="color: var(--color-muted); text-decoration: none;">Адреса доставки</a> /
+    <span style="color: var(--color-text);">{{ title }}</span>
+  </nav>
+  <h1 class="wire-page-title">{{ title }}</h1>
+  <p class="wire-page-subtitle">Укажите точный адрес для доставки бутылей воды и оборудования</p>
+
+  <div class="wire-profile-layout">
+    <aside class="wire-profile-sidebar desktop-only" aria-label="Меню личного кабинета">
+      <div class="wire-profile-menu-box">
+        <h2 class="wire-profile-menu-title">Мой кабинет</h2>
+        <nav class="wire-profile-nav-list">
+          <a href="{% url 'cabinet' %}" class="wire-profile-link">Профиль</a>
+          <a href="{% url 'cabinet_addresses' %}" class="wire-profile-link active">Адреса доставки</a>
+          <a href="{% url 'cabinet_orders' %}" class="wire-profile-link">История заказов</a>
+          <a href="{% url 'cabinet_balance' %}" class="wire-profile-link">Баланс тары</a>
+          <a href="{% url 'cabinet_rentals' %}" class="wire-profile-link">Договоры аренды</a>
+          <a href="{% url 'cabinet_schedules' %}" class="wire-profile-link">Регулярная доставка</a>
+          <form method="post" action="{% url 'logout' %}" class="wire-profile-logout-form">
+            {% csrf_token %}
+            <button type="submit" class="wire-profile-link wire-logout-link">Выход</button>
+          </form>
+        </nav>
+      </div>
+    </aside>
+
+    <div class="wire-profile-content">
+      <div class="wire-card" style="padding: 32px; max-width: 600px;">
+        {% if form.non_field_errors %}
+        <div class="wire-alert wire-alert-error" role="alert">
+          {% for error in form.non_field_errors %}
+          <p>{{ error }}</p>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" class="wire-auth-form" novalidate>
+          {% csrf_token %}
+
+          <div class="wire-form-group">
+            <label for="id_district" class="wire-form-label">Район города</label>
+            <select name="district" id="id_district" class="wire-form-input {% if form.district.errors %}wire-input-error{% endif %}" required>
+              <option value="">-- Выберите район --</option>
+              {% for dist in form.fields.district.queryset %}
+              <option value="{{ dist.pk }}" {% if form.district.value|stringformat:"s" == dist.pk|stringformat:"s" %}selected{% endif %}>
+                {{ dist.name }}
+              </option>
+              {% endfor %}
+            </select>
+            {% if form.district.errors %}
+            <span class="wire-field-error">{{ form.district.errors.0 }}</span>
+            {% endif %}
+          </div>
+
+          <div class="wire-form-group">
+            <label for="id_street" class="wire-form-label">Улица</label>
+            <input type="text" name="street" id="id_street" maxlength="150" required class="wire-form-input {% if form.street.errors %}wire-input-error{% endif %}" value="{{ form.street.value|default:'' }}" placeholder="Например: Ленина">
+            {% if form.street.errors %}
+            <span class="wire-field-error">{{ form.street.errors.0 }}</span>
+            {% endif %}
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="wire-form-group">
+              <label for="id_house" class="wire-form-label">Дом / Корпус</label>
+              <input type="text" name="house" id="id_house" maxlength="10" required class="wire-form-input {% if form.house.errors %}wire-input-error{% endif %}" value="{{ form.house.value|default:'' }}" placeholder="10">
+              {% if form.house.errors %}
+              <span class="wire-field-error">{{ form.house.errors.0 }}</span>
+              {% endif %}
+            </div>
+
+            <div class="wire-form-group">
+              <label for="id_flat" class="wire-form-label">Квартира или офис</label>
+              <input type="text" name="flat" id="id_flat" maxlength="10" class="wire-form-input" value="{{ form.flat.value|default:'' }}" placeholder="42 (необязательно)">
+              {% if form.flat.errors %}
+              <span class="wire-field-error">{{ form.flat.errors.0 }}</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="wire-form-group">
+            <label for="id_comment" class="wire-form-label">Как пройти / домофон / этаж</label>
+            <input type="text" name="comment" id="id_comment" maxlength="200" class="wire-form-input" value="{{ form.comment.value|default:'' }}" placeholder="Подъезд 2, этаж 4, код 42К">
+            {% if form.comment.errors %}
+            <span class="wire-field-error">{{ form.comment.errors.0 }}</span>
+            {% endif %}
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-top: 16px;">
+            <button type="submit" class="wire-btn wire-btn-primary" style="padding: 12px 24px;">Сохранить адрес</button>
+            <a href="{% url 'cabinet_addresses' %}" class="wire-btn wire-btn-secondary" style="text-decoration: none; padding: 12px 20px;">Отмена</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

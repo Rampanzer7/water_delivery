@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Заявка №{{ req.pk }} на санобработку | Оператор{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-page-container">
+  <nav class="wire-breadcrumbs" aria-label="Хлебные крошки" style="margin-bottom: 16px; font-size: 13px; color: var(--color-muted);">
+    <a href="{% url 'operator_orders' %}" style="color: var(--color-muted); text-decoration: none;">Диспетчерская</a> /
+    <a href="{% url 'operator_service' %}" style="color: var(--color-muted); text-decoration: none;">Заявки на санобработку</a> /
+    <span style="color: var(--color-text);">Заявка №{{ req.pk }}</span>
+  </nav>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+    <h1 class="wire-page-title" style="margin: 0;">Заявка №{{ req.pk }}</h1>
+    <div>
+      {% if req.status == 'done' %}
+      <span class="wire-badge wire-badge-green" style="font-size: 14px; padding: 6px 14px;">Выполнена</span>
+      {% else %}
+      <span class="wire-badge wire-badge-blue" style="font-size: 14px; padding: 6px 14px;">Ожидает выполнения</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; margin-bottom: 24px;">
+    <div class="wire-card" style="padding: 24px;">
+      <h2 style="font-size: 18px; color: var(--color-navy); margin-top: 0; margin-bottom: 16px;">Детали заявки и адрес</h2>
+      <div style="font-size: 14px; line-height: 1.8;">
+        <div>Клиент: <strong>{{ req.rental.user.username }}</strong></div>
+        <div>Телефон: <strong>{{ req.rental.user.profile.phone|default:"Не указан" }}</strong></div>
+        <div>Договор: <strong>№{{ req.rental.pk }}</strong></div>
+        <div>Кулер: <strong>{{ req.rental.cooler.name }}</strong></div>
+        <div>Адрес: <strong>{{ req.rental.address }}</strong></div>
+        <div>Желаемая дата визита: <strong>{{ req.desired_date|date:"j E Y" }}</strong></div>
+        {% if req.comment %}
+        <div style="margin-top: 8px; padding: 10px; background: var(--color-bg); border-radius: 6px;">
+          Комментарий клиента: «{{ req.comment }}»
+        </div>
+        {% endif %}
+      </div>
+
+      <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--color-border-light);">
+        <h3 style="font-size: 16px; color: var(--color-navy); margin: 0 0 12px 0;">Изменение статуса заявки</h3>
+        <form method="post" action="{% url 'operator_service_status' req.pk %}">
+          {% csrf_token %}
+          {% if req.status == 'new' %}
+          <input type="hidden" name="status" value="done">
+          <button type="submit" class="wire-btn wire-btn-primary" style="padding: 10px 20px;">
+            Отметить как выполненную
+          </button>
+          {% else %}
+          <input type="hidden" name="status" value="new">
+          <button type="submit" class="wire-btn wire-btn-secondary" style="padding: 10px 20px;">
+            Вернуть в статус «Ожидает»
+          </button>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+
+    <div class="wire-card" style="padding: 24px;">
+      <h2 style="font-size: 18px; color: var(--color-navy); margin-top: 0; margin-bottom: 16px;">Прикреплённое фото аппарата</h2>
+      {% if req.photo %}
+      <div style="max-height: 400px; overflow: hidden; border-radius: 8px; border: 1px solid var(--color-border-light);">
+        <img src="{{ req.photo.url }}" alt="Фото кулера" style="width: 100%; height: auto; display: block; object-fit: contain;">
+      </div>
+      <div style="margin-top: 8px; font-size: 12px; color: var(--color-muted);">
+        <a href="{{ req.photo.url }}" target="_blank" style="color: var(--color-primary);">Открыть в полном размере</a>
+      </div>
+      {% else %}
+      <p style="color: var(--color-muted); font-size: 14px;">Фото не прикреплено.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div>
+    <a href="{% url 'operator_service' %}" class="wire-btn wire-btn-secondary" style="text-decoration: none;">&larr; Назад к списку заявок</a>
+  </div>
+</div>
+{% endblock %}

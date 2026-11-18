@@ -1,13 +1,50 @@
 {% extends 'base.html' %}
-{% block title %}Вход{% endblock %}
+{% load static %}
+
+{% block title %}Вход в аккаунт | Святой Источник{% endblock %}
+
 {% block content %}
-<h1>Вход</h1>
-<form class="form-card" method="post">
-  {% csrf_token %}
-  {{ form.non_field_errors }}
-  {% include 'app/_form_fields.html' %}
-  <input type="hidden" name="next" value="{{ next }}">
-  <button class="button" type="submit">Войти</button>
-</form>
-<p>Нет аккаунта? <a href="{% url 'register' %}">Зарегистрируйтесь</a></p>
+<div class="wire-container wire-auth-container">
+  <div class="wire-auth-card">
+    <h1 class="wire-auth-title">Вход</h1>
+    <p class="wire-auth-subtitle">Введите логин или почту и пароль для доступа к заказам и аренде</p>
+
+    {% if form.non_field_errors %}
+    <div class="wire-alert wire-alert-error" role="alert">
+      {% for error in form.non_field_errors %}
+      <p>{{ error }}</p>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'login' %}" class="wire-auth-form" novalidate>
+      {% csrf_token %}
+
+      <div class="wire-form-group">
+        <label for="id_username" class="wire-form-label">Логин или почта</label>
+        <input type="text" name="username" autofocus autocapitalize="none" autocomplete="username" maxlength="254" required id="id_username" class="wire-input {% if form.username.errors %}wire-input-error{% endif %}" value="{{ form.username.value|default:'' }}" placeholder="Логин или почта">
+        {% if form.username.errors %}
+        <span class="wire-field-error">{{ form.username.errors.0 }}</span>
+        {% endif %}
+      </div>
+
+      <div class="wire-form-group">
+        <label for="id_password" class="wire-form-label">Пароль</label>
+        <input type="password" name="password" autocomplete="current-password" required id="id_password" class="wire-input {% if form.password.errors %}wire-input-error{% endif %}" placeholder="Введите пароль">
+        {% if form.password.errors %}
+        <span class="wire-field-error">{{ form.password.errors.0 }}</span>
+        {% endif %}
+      </div>
+
+      <input type="hidden" name="next" value="{{ next|default:'' }}">
+
+      <button type="submit" class="wire-btn wire-btn-primary wire-btn-block">Войти</button>
+    </form>
+
+    <div class="wire-auth-footer">
+      <span>Нет аккаунта?</span>
+      <a href="{% url 'register' %}" class="wire-auth-link">Зарегистрируйтесь</a>
+    </div>
+  </div>
+</div>
 {% endblock %}

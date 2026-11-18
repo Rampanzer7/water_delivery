@@ -1,13 +1,92 @@
 {% extends 'base.html' %}
-{% block title %}Аренда кулера{% endblock %}
+{% load static %}
+
+{% block title %}Оформление аренды: {{ cooler.name }} | Святой Источник{% endblock %}
+
 {% block content %}
-<h1>Аренда: {{ cooler.name }}</h1>
-<p>{{ cooler.monthly_price|floatformat:"-2" }} ₽ в месяц, залог {{ cooler.deposit|floatformat:"-2" }} ₽.</p>
-<form class="form-card" method="post">
-  {% csrf_token %}
-  {{ form.non_field_errors }}
-  {% include 'app/_form_fields.html' %}
-  <button class="button" type="submit">Оформить договор</button>
-  <a class="button secondary" href="{% url 'coolers' %}">Отмена</a>
-</form>
+<div class="wire-container wire-page-container">
+  <nav class="wire-breadcrumbs" aria-label="Хлебные крошки" style="margin-bottom: 16px; font-size: 13px; color: var(--color-muted);">
+    <a href="{% url 'home' %}" style="color: var(--color-muted); text-decoration: none;">Главная</a> /
+    <a href="{% url 'coolers' %}" style="color: var(--color-muted); text-decoration: none;">Кулеры</a> /
+    <a href="{% url 'cooler_detail' cooler.pk %}" style="color: var(--color-muted); text-decoration: none;">{{ cooler.name }}</a> /
+    <span style="color: var(--color-text);">Заявка на аренду</span>
+  </nav>
+
+  <header class="wire-page-header">
+    <h1 class="wire-page-title">Заявка на аренду кулера</h1>
+    <p class="wire-page-subtitle">Заполните адрес установки и желаемую дату доставки оборудования</p>
+  </header>
+
+  <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 32px; align-items: start;">
+    <div class="wire-card" style="padding: 32px;">
+      {% if form.non_field_errors %}
+      <div class="wire-alert wire-alert-error" role="alert">
+        {% for error in form.non_field_errors %}
+        <p>{{ error }}</p>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <form method="post" class="wire-auth-form" novalidate>
+        {% csrf_token %}
+
+        <div class="wire-form-group">
+          <label for="id_address" class="wire-form-label">Куда доставить и установить кулер</label>
+          <select name="address" id="id_address" class="wire-form-input {% if form.address.errors %}wire-input-error{% endif %}" required>
+            <option value="">-- Выберите адрес доставки --</option>
+            {% for choice in form.fields.address.queryset %}
+            <option value="{{ choice.pk }}" {% if form.address.value|stringformat:"s" == choice.pk|stringformat:"s" %}selected{% endif %}>
+              {{ choice }}
+            </option>
+            {% endfor %}
+          </select>
+          {% if form.address.errors %}
+          <span class="wire-field-error">{{ form.address.errors.0 }}</span>
+          {% endif %}
+          <div style="margin-top: 6px; font-size: 13px;">
+            <a href="{% url 'cabinet_address_create' %}?next={{ request.path }}" style="color: var(--color-primary); text-decoration: none;">+ Добавить новый адрес доставки</a>
+          </div>
+        </div>
+
+        <div class="wire-form-group">
+          <label for="id_start_date" class="wire-form-label">Желаемая дата начала аренды</label>
+          <input type="date" name="start_date" id="id_start_date" class="wire-form-input {% if form.start_date.errors %}wire-input-error{% endif %}" value="{{ form.start_date.value|default:'' }}" required>
+          {% if form.start_date.errors %}
+          <span class="wire-field-error">{{ form.start_date.errors.0 }}</span>
+          {% endif %}
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 16px;">
+          <button type="submit" class="wire-btn wire-btn-primary" style="padding: 12px 24px;">Подтвердить и заключить договор</button>
+          <a href="{% url 'cooler_detail' cooler.pk %}" class="wire-btn wire-btn-secondary" style="text-decoration: none; padding: 12px 20px;">Отмена</a>
+        </div>
+      </form>
+    </div>
+
+    <div class="wire-card" style="padding: 28px;">
+      <h3 style="font-size: 18px; color: var(--color-navy); margin-top: 0; margin-bottom: 16px;">Выбранное оборудование</h3>
+      <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 16px;">
+        <img src="{% static 'images/cooler.jpeg' %}" alt="{{ cooler.name }}" width="90" height="90" style="object-fit: contain;">
+        <div>
+          <div style="font-weight: 700; color: var(--color-navy); font-size: 16px;">{{ cooler.name }}</div>
+          <div style="font-size: 14px; color: var(--color-muted);">В наличии на складе: {{ cooler.quantity }} шт.</div>
+        </div>
+      </div>
+      <div style="border-top: 1px solid var(--color-border-light); padding-top: 14px; font-size: 14px; line-height: 1.6;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+          <span>Арендная плата:</span>
+          <strong>{{ cooler.monthly_price|floatformat:"-2" }} ₽ / мес</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+          <span>Гарантийный залог:</span>
+          <strong>{{ cooler.deposit|floatformat:"-2" }} ₽</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--color-border-light); font-size: 16px; font-weight: 700; color: var(--color-navy);">
+          <span>Первый платёж (залог):</span>
+          <span>{{ cooler.deposit|floatformat:"-2" }} ₽</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

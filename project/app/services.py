@@ -6,11 +6,27 @@ from django.db import transaction
 from django.db.models import F
 from django.utils import timezone
 
-from .models import ContainerBalance, Cooler, Order, OrderItem, Product, Rental, RouteSheet
+from .models import ContainerBalance, Cooler, Order, OrderItem, Product, Rental, RouteSheet, SiteSetting
 
 
 class ServiceError(Exception):
     pass
+
+
+def get_first_order_discount():
+    setting = SiteSetting.objects.filter(key='first_order_discount').first()
+    if setting:
+        try:
+            return int(setting.value)
+        except ValueError:
+            return 10
+    return 10
+
+
+def is_first_order(user):
+    if not user or not user.is_authenticated:
+        return False
+    return not Order.objects.filter(user=user).exists()
 
 
 def notify(user, subject, text):
@@ -41,7 +57,7 @@ def set_cart_quantity(request, product, quantity):
     request.session['cart'] = cart
 
 
-def calculate_order(lines, returned_bottles):
+def calculate_order(lines, returned_bottles, discount_percent=0):
     goods_total = Decimal('0')
     deposit_total = Decimal('0')
     bottles_total = 0
@@ -53,9 +69,18 @@ def calculate_order(lines, returned_bottles):
             covered = min(returned_left, quantity)
             returned_left -= covered
             deposit_total += product.deposit_price * (quantity - covered)
+
+    discount_amount = Decimal('0')
+    if discount_percent and discount_percent > 0:
+        discount_amount = round(goods_total * Decimal(str(discount_percent)) / Decimal('100'), 2)
+        goods_total = max(goods_total - discount_amount, Decimal('0'))
+
     return {
         'bottles': bottles_total,
         'missing': max(bottles_total - returned_bottles, 0),
+        'goods_before_discount': goods_total + discount_amount,
+        'discount_amount': discount_amount,
+        'discount_percent': discount_percent,
         'goods': goods_total,
         'deposit': deposit_total,
         'total': goods_total + deposit_total,
@@ -72,7 +97,8 @@ def create_order(user, lines, data):
             raise ServiceError(f'Товара «{current.name}» осталось только {current.stock} шт.')
         fresh_lines.append((current, quantity))
 
-    totals = calculate_order(fresh_lines, data['returned_bottles'])
+    discount_percent = get_first_order_discount() if is_first_order(user) else 0
+    totals = calculate_order(fresh_lines, data['returned_bottles'], discount_percent=discount_percent)
     order = Order.objects.create(
         user=user,
         address=data['address'],
@@ -129,16 +155,22 @@ def assign_order(order, driver):
 
 
 @transaction.atomic
-def close_delivery(order_pk):
+def close_delivery(order_pk, returned_bottles=None):
     order = Order.objects.select_for_update().get(pk=order_pk)
     if order.status != Order.ASSIGNED:
-        raise ServiceError('Закрыть можно только доставку заказа, который передан водителю.')
+        raise ServiceError('Закрыть можно только доставку заказа в статусе «В пути / Назначен».')
     balance, _ = ContainerBalance.objects.select_for_update().get_or_create(user=order.user)
+
+    if returned_bottles is not None:
+        if returned_bottles > balance.bottles:
+            raise ServiceError(f'Сдаваемых бутылей ({returned_bottles}) не может быть больше, чем у клиента на руках ({balance.bottles}).')
+        order.returned_bottles = returned_bottles
+
     balance.bottles = max(balance.bottles + order.bottles_total - order.returned_bottles, 0)
     balance.save(update_fields=['bottles'])
     order.status = Order.DELIVERED
     order.delivered_at = timezone.now()
-    order.save(update_fields=['status', 'delivered_at'])
+    order.save(update_fields=['status', 'delivered_at', 'returned_bottles'])
     return order
 
 

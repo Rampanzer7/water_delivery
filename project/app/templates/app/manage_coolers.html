@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Аренда кулеров | Администрирование{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-page-container">
+  <header class="wire-page-header">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <h1 class="wire-page-title">Парк кулеров для аренды</h1>
+        <p class="wire-page-subtitle">Управление моделями кулеров, арендными ставками, залогом и складским количеством</p>
+      </div>
+      <a href="{% url 'manage_cooler_create' %}" class="wire-btn wire-btn-primary" style="text-decoration: none; padding: 10px 20px;">
+        + Добавить кулер
+      </a>
+    </div>
+  </header>
+
+  <div class="wire-category-tags" style="margin-bottom: 24px;">
+    <a href="{% url 'manage_settings' %}" class="wire-pill">Настройки системы</a>
+    <a href="{% url 'manage_users' %}" class="wire-pill">Пользователи и роли</a>
+    <a href="{% url 'manage_products' %}" class="wire-pill">Каталог товаров</a>
+    <a href="{% url 'manage_coolers' %}" class="wire-pill active">Аренда кулеров</a>
+    <a href="{% url 'manage_intervals' %}" class="wire-pill">Интервалы доставки</a>
+    <a href="{% url 'manage_districts' %}" class="wire-pill">Районы города</a>
+  </div>
+
+  {% if coolers %}
+  <div class="wire-table-card">
+    <table class="wire-table">
+      <thead>
+        <tr>
+          <th style="width: 60px;">Фото</th>
+          <th>Модель кулера</th>
+          <th>Аренда в месяц</th>
+          <th>Залог</th>
+          <th>В наличии</th>
+          <th>Описание / Особенности</th>
+          <th style="text-align: right;">Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in coolers %}
+        <tr>
+          <td>
+            {% if c.photo %}
+              <img src="{{ c.photo.url }}" alt="{{ c.name }}" style="width: 44px; height: 44px; object-fit: contain; border-radius: 6px; background: #f8fafc; border: 1px solid #e2e8f0;">
+            {% else %}
+              <div style="width: 44px; height: 44px; background: #e2e8f0; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 18px;">❄️</div>
+            {% endif %}
+          </td>
+          <td>
+            <strong>{{ c.name }}</strong>
+          </td>
+          <td><strong style="color: var(--color-navy);">{{ c.monthly_price }} ₽/мес</strong></td>
+          <td>{{ c.deposit }} ₽</td>
+          <td>
+            {% if c.quantity > 2 %}
+              <span style="color: #16a34a; font-weight: 600;">{{ c.quantity }} шт.</span>
+            {% elif c.quantity > 0 %}
+              <span style="color: #d97706; font-weight: 600;">{{ c.quantity }} шт.</span>
+            {% else %}
+              <span style="color: #dc2626; font-weight: 600;">0 шт.</span>
+            {% endif %}
+          </td>
+          <td style="max-width: 320px; font-size: 13px; color: var(--color-slate); line-height: 1.4;">
+            {{ c.description|truncatewords:15 }}
+          </td>
+          <td style="text-align: right;">
+            <div style="display: flex; gap: 6px; justify-content: flex-end;">
+              <a href="{% url 'manage_cooler_edit' c.pk %}" class="wire-btn wire-btn-secondary" style="font-size: 13px; padding: 6px 12px; text-decoration: none;">
+                Изменить
+              </a>
+              <a href="{% url 'manage_cooler_delete' c.pk %}" class="wire-btn" style="font-size: 13px; padding: 6px 12px; text-decoration: none; color: #dc2626; background: #fee2e2; border-color: #fca5a5;">
+                Удалить
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="wire-empty-state">
+    <div class="wire-empty-icon">❄️</div>
+    <h3 class="wire-empty-title">Кулеры не найдены</h3>
+    <p class="wire-empty-text">Добавьте модели кулеров для предложения аренды клиентам.</p>
+    <a href="{% url 'manage_cooler_create' %}" class="wire-btn wire-btn-primary" style="text-decoration: none; margin-top: 16px;">
+      + Добавить кулер
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

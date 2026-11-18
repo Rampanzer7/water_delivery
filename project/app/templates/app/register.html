@@ -1,11 +1,72 @@
 {% extends 'base.html' %}
-{% block title %}Регистрация{% endblock %}
+{% load static %}
+
+{% block title %}Регистрация клиента | Святой Источник{% endblock %}
+
 {% block content %}
-<h1>Регистрация</h1>
-<form class="form-card" method="post">
-  {% csrf_token %}
-  {{ form.non_field_errors }}
-  {% include 'app/_form_fields.html' %}
-  <button class="button" type="submit">Зарегистрироваться</button>
-</form>
+<div class="wire-container wire-auth-container">
+  <div class="wire-auth-card">
+    <h1 class="wire-auth-title">Регистрация</h1>
+    <p class="wire-auth-subtitle">Создайте личный кабинет для быстрой доставки воды и аренды кулеров</p>
+
+    {% if form.non_field_errors %}
+    <div class="wire-alert wire-alert-error" role="alert">
+      {% for error in form.non_field_errors %}
+      <p>{{ error }}</p>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'register' %}" class="wire-auth-form" novalidate>
+      {% csrf_token %}
+
+      <div class="wire-form-group">
+        <label for="id_username" class="wire-form-label">Логин (Имя пользователя)</label>
+        <input type="text" name="username" autofocus maxlength="150" required id="id_username" class="wire-input {% if form.username.errors %}wire-input-error{% endif %}" value="{{ form.username.value|default:'' }}" placeholder="Придумайте логин">
+        {% if form.username.errors %}
+        <span class="wire-field-error">{{ form.username.errors.0 }}</span>
+        {% endif %}
+      </div>
+
+      <div class="wire-form-group">
+        <label for="id_email" class="wire-form-label">Электронная почта</label>
+        <input type="email" name="email" required id="id_email" class="wire-input {% if form.email.errors %}wire-input-error{% endif %}" value="{{ form.email.value|default:'' }}" placeholder="name@example.com">
+        {% if form.email.errors %}
+        <span class="wire-field-error">{{ form.email.errors.0 }}</span>
+        {% endif %}
+      </div>
+
+      <div class="wire-form-group">
+        <label for="id_phone" class="wire-form-label">Номер телефона</label>
+        <input type="tel" name="phone" required id="id_phone" class="wire-input {% if form.phone.errors %}wire-input-error{% endif %}" value="{{ form.phone.value|default:'' }}" placeholder="+7 (900) 000-00-00">
+        {% if form.phone.errors %}
+        <span class="wire-field-error">{{ form.phone.errors.0 }}</span>
+        {% endif %}
+      </div>
+
+      <div class="wire-form-group">
+        <label for="id_password1" class="wire-form-label">Пароль (не менее 8 символов)</label>
+        <input type="password" name="password1" autocomplete="new-password" required id="id_password1" class="wire-input {% if form.password1.errors %}wire-input-error{% endif %}" placeholder="Минимум 8 знаков">
+        {% if form.password1.errors %}
+        <span class="wire-field-error">{{ form.password1.errors.0 }}</span>
+        {% endif %}
+      </div>
+
+      <div class="wire-form-group">
+        <label for="id_password2" class="wire-form-label">Подтверждение пароля</label>
+        <input type="password" name="password2" autocomplete="new-password" required id="id_password2" class="wire-input {% if form.password2.errors %}wire-input-error{% endif %}" placeholder="Повторите пароль">
+        {% if form.password2.errors %}
+        <span class="wire-field-error">{{ form.password2.errors.0 }}</span>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="wire-btn wire-btn-primary wire-btn-block">Зарегистрироваться</button>
+    </form>
+
+    <div class="wire-auth-footer">
+      <span>Уже есть аккаунт?</span>
+      <a href="{% url 'login' %}" class="wire-auth-link">Войти</a>
+    </div>
+  </div>
+</div>
 {% endblock %}

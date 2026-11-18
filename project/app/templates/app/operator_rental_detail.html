@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Договор №{{ rental.pk }} | Оператор | Святой Источник{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-page-container">
+  <nav class="wire-breadcrumbs" aria-label="Хлебные крошки" style="margin-bottom: 16px; font-size: 13px; color: var(--color-muted);">
+    <a href="{% url 'operator_orders' %}" style="color: var(--color-muted); text-decoration: none;">Диспетчерская</a> /
+    <a href="{% url 'operator_rentals' %}" style="color: var(--color-muted); text-decoration: none;">Договоры аренды</a> /
+    <span style="color: var(--color-text);">Договор №{{ rental.pk }}</span>
+  </nav>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+    <h1 class="wire-page-title" style="margin: 0;">Договор №{{ rental.pk }}</h1>
+    <div>
+      {% if rental.status == 'active' %}
+      <span class="wire-badge wire-badge-green" style="font-size: 14px; padding: 6px 14px;">Действует</span>
+      {% else %}
+      <span class="wire-badge wire-badge-gray" style="font-size: 14px; padding: 6px 14px;">Расторгнут</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; align-items: start; margin-bottom: 24px;">
+    <div class="wire-card" style="padding: 24px;">
+      <h2 style="font-size: 18px; color: var(--color-navy); margin-top: 0; margin-bottom: 16px;">Данные договора и кулера</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 14px; line-height: 1.6;">
+        <div>
+          <div style="color: var(--color-muted);">Клиент:</div>
+          <strong style="color: var(--color-navy);">{{ rental.user.username }}</strong>
+        </div>
+        <div>
+          <div style="color: var(--color-muted);">Телефон:</div>
+          <strong>{{ rental.user.profile.phone|default:"Не указан" }}</strong>
+        </div>
+        <div>
+          <div style="color: var(--color-muted);">Модель кулера:</div>
+          <strong style="color: var(--color-navy);">{{ rental.cooler.name }}</strong>
+        </div>
+        <div>
+          <div style="color: var(--color-muted);">Дата заключения:</div>
+          <strong>{{ rental.start_date|date:"j E Y" }}</strong>
+        </div>
+        <div>
+          <div style="color: var(--color-muted);">Ежемесячная ставка:</div>
+          <strong>{{ rental.monthly_price|floatformat:"-2" }} ₽ / мес</strong>
+        </div>
+        <div>
+          <div style="color: var(--color-muted);">Залог за аппарат:</div>
+          <strong>{{ rental.deposit|floatformat:"-2" }} ₽</strong>
+        </div>
+        <div style="grid-column: 1 / -1;">
+          <div style="color: var(--color-muted);">Адрес фактической установки:</div>
+          <strong>{{ rental.address }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="wire-card" style="padding: 24px;">
+      <h2 style="font-size: 18px; color: var(--color-navy); margin-top: 0; margin-bottom: 16px;">Управление статусом договора</h2>
+      <p style="font-size: 14px; color: var(--color-muted); margin-bottom: 20px;">Оператор может подтвердить продление или зафиксировать возврат кулера и завершение аренды.</p>
+      <form method="post" action="{% url 'operator_rental_status' rental.pk %}">
+        {% csrf_token %}
+        {% if rental.status == 'active' %}
+        <input type="hidden" name="status" value="closed">
+        <button type="submit" class="wire-btn" style="background: transparent; color: var(--color-error); border: 1px solid var(--color-error); padding: 10px 18px;" onclick="return confirm('Завершить (расторгнуть) договор аренды и принять кулер?');">
+          Завершить договор аренды
+        </button>
+        {% else %}
+        <input type="hidden" name="status" value="active">
+        <button type="submit" class="wire-btn wire-btn-primary" style="padding: 10px 18px;">
+          Возобновить договор аренды
+        </button>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+
+  <div class="wire-table-card" style="margin-bottom: 24px;">
+    <div style="padding: 16px 20px; border-bottom: 1px solid var(--color-border-light);">
+      <h3 style="margin: 0; font-size: 16px; color: var(--color-navy);">Заявки на санобработку по этому договору</h3>
+    </div>
+    <table class="wire-table">
+      <thead>
+        <tr>
+          <th>№</th>
+          <th>Желаемая дата</th>
+          <th>Фото</th>
+          <th>Комментарий клиента</th>
+          <th>Статус</th>
+          <th>Действие</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for req in requests %}
+        <tr>
+          <td>№{{ req.pk }}</td>
+          <td>{{ req.desired_date|date:"d.m.Y" }}</td>
+          <td>
+            {% if req.photo %}
+            <a href="{{ req.photo.url }}" target="_blank" style="color: var(--color-primary);">Смотреть фото</a>
+            {% else %}—{% endif %}
+          </td>
+          <td>{{ req.comment|default:"—" }}</td>
+          <td>
+            {% if req.status == 'done' %}
+            <span class="wire-badge wire-badge-green">Выполнена</span>
+            {% else %}
+            <span class="wire-badge wire-badge-blue">Ожидает визита</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'operator_service_detail' req.pk %}" class="wire-btn wire-btn-secondary" style="font-size: 12px; padding: 4px 8px; text-decoration: none;">
+              Открыть
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" style="text-align: center; color: var(--color-muted); padding: 20px;">Заявок не поступало.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div>
+    <a href="{% url 'operator_rentals' %}" class="wire-btn wire-btn-secondary" style="text-decoration: none;">&larr; Назад к реестру договоров</a>
+  </div>
+</div>
+{% endblock %}

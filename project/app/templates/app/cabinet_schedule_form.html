@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Новый график доставки | Святой Источник{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-page-container">
+  <nav class="wire-breadcrumbs" aria-label="Хлебные крошки" style="margin-bottom: 16px; font-size: 13px; color: var(--color-muted);">
+    <a href="{% url 'cabinet' %}" style="color: var(--color-muted); text-decoration: none;">Кабинет</a> /
+    <a href="{% url 'cabinet_schedules' %}" style="color: var(--color-muted); text-decoration: none;">Регулярная доставка</a> /
+    <span style="color: var(--color-text);">Новый график</span>
+  </nav>
+  <h1 class="wire-page-title">Настройка графика доставки</h1>
+  <p class="wire-page-subtitle">Укажите день недели, удобный интервал и количество бутылей воды</p>
+
+  <div class="wire-profile-layout">
+    <aside class="wire-profile-sidebar desktop-only" aria-label="Меню личного кабинета">
+      <div class="wire-profile-menu-box">
+        <h2 class="wire-profile-menu-title">Мой кабинет</h2>
+        <nav class="wire-profile-nav-list">
+          <a href="{% url 'cabinet' %}" class="wire-profile-link">Профиль</a>
+          <a href="{% url 'cabinet_addresses' %}" class="wire-profile-link">Адреса доставки</a>
+          <a href="{% url 'cabinet_orders' %}" class="wire-profile-link">История заказов</a>
+          <a href="{% url 'cabinet_balance' %}" class="wire-profile-link">Баланс тары</a>
+          <a href="{% url 'cabinet_rentals' %}" class="wire-profile-link">Договоры аренды</a>
+          <a href="{% url 'cabinet_schedules' %}" class="wire-profile-link active">Регулярная доставка</a>
+          <form method="post" action="{% url 'logout' %}" class="wire-profile-logout-form">
+            {% csrf_token %}
+            <button type="submit" class="wire-profile-link wire-logout-link">Выход</button>
+          </form>
+        </nav>
+      </div>
+    </aside>
+
+    <div class="wire-profile-content">
+      <div class="wire-card" style="padding: 32px; max-width: 640px;">
+        {% if form.non_field_errors %}
+        <div class="wire-alert wire-alert-error" role="alert">
+          {% for error in form.non_field_errors %}
+          <p>{{ error }}</p>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" class="wire-auth-form" novalidate>
+          {% csrf_token %}
+
+          <div class="wire-form-group">
+            <label for="id_address" class="wire-form-label">Адрес доставки</label>
+            <select name="address" id="id_address" class="wire-form-input {% if form.address.errors %}wire-input-error{% endif %}" required>
+              <option value="">-- Выберите адрес --</option>
+              {% for addr in form.fields.address.queryset %}
+              <option value="{{ addr.pk }}" {% if form.address.value|stringformat:"s" == addr.pk|stringformat:"s" %}selected{% endif %}>
+                {{ addr }}
+              </option>
+              {% endfor %}
+            </select>
+            {% if form.address.errors %}
+            <span class="wire-field-error">{{ form.address.errors.0 }}</span>
+            {% endif %}
+          </div>
+
+          <div class="wire-form-group">
+            <label for="id_weekday" class="wire-form-label">День недели</label>
+            <select name="weekday" id="id_weekday" class="wire-form-input {% if form.weekday.errors %}wire-input-error{% endif %}">
+              {% for val, label in form.fields.weekday.choices %}
+              <option value="{{ val }}" {% if form.weekday.value|stringformat:"s" == val|stringformat:"s" %}selected{% endif %}>
+                {{ label }}
+              </option>
+              {% endfor %}
+            </select>
+            {% if form.weekday.errors %}
+            <span class="wire-field-error">{{ form.weekday.errors.0 }}</span>
+            {% endif %}
+          </div>
+
+          <div class="wire-form-group">
+            <label for="id_slot" class="wire-form-label">Интервал времени</label>
+            <select name="slot" id="id_slot" class="wire-form-input {% if form.slot.errors %}wire-input-error{% endif %}">
+              {% for slot in form.fields.slot.queryset %}
+              <option value="{{ slot.pk }}" {% if form.slot.value|stringformat:"s" == slot.pk|stringformat:"s" %}selected{% endif %}>
+                {{ slot }}
+              </option>
+              {% endfor %}
+            </select>
+            {% if form.slot.errors %}
+            <span class="wire-field-error">{{ form.slot.errors.0 }}</span>
+            {% endif %}
+          </div>
+
+          <div class="wire-form-group">
+            <label for="id_product" class="wire-form-label">Наименование воды</label>
+            <select name="product" id="id_product" class="wire-form-input {% if form.product.errors %}wire-input-error{% endif %}">
+              {% for prod in form.fields.product.queryset %}
+              <option value="{{ prod.pk }}" {% if form.product.value|stringformat:"s" == prod.pk|stringformat:"s" %}selected{% endif %}>
+                {{ prod.name }} ({{ prod.price|floatformat:"-2" }} ₽)
+              </option>
+              {% endfor %}
+            </select>
+            {% if form.product.errors %}
+            <span class="wire-field-error">{{ form.product.errors.0 }}</span>
+            {% endif %}
+          </div>
+
+          <div class="wire-form-group">
+            <label for="id_quantity" class="wire-form-label">Количество бутылей 19 л</label>
+            <input type="number" name="quantity" id="id_quantity" min="1" max="50" class="wire-form-input {% if form.quantity.errors %}wire-input-error{% endif %}" value="{{ form.quantity.value|default:2 }}" required>
+            {% if form.quantity.errors %}
+            <span class="wire-field-error">{{ form.quantity.errors.0 }}</span>
+            {% endif %}
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-top: 16px;">
+            <button type="submit" class="wire-btn wire-btn-primary" style="padding: 12px 24px;">Сохранить график</button>
+            <a href="{% url 'cabinet_schedules' %}" class="wire-btn wire-btn-secondary" style="text-decoration: none; padding: 12px 20px;">Отмена</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

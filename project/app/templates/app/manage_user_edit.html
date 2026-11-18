@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Редактировать пользователя: {{ target_user.username }} | Администрирование{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-page-container">
+  <div style="margin-bottom: 20px;">
+    <a href="{% url 'manage_users' %}" class="wire-btn wire-btn-secondary" style="font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+      ← Назад к списку пользователей
+    </a>
+  </div>
+
+  <header class="wire-page-header">
+    <h1 class="wire-page-title">Редактирование: {{ target_user.username }}</h1>
+    <p class="wire-page-subtitle">Изменение контактных данных, прав доступа и роли в системе</p>
+  </header>
+
+  <div class="wire-card" style="max-width: 640px; padding: 32px;">
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+      <div style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;">
+        {{ form.non_field_errors }}
+      </div>
+      {% endif %}
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="wire-form-group">
+          <label for="{{ form.first_name.id_for_label }}" class="wire-form-label">{{ form.first_name.label }}</label>
+          <input type="text" name="{{ form.first_name.name }}" id="{{ form.first_name.id_for_label }}"
+                 value="{{ form.first_name.value|default:'' }}" class="wire-form-input">
+          {% if form.first_name.errors %}<p class="wire-form-error">{{ form.first_name.errors.0 }}</p>{% endif %}
+        </div>
+
+        <div class="wire-form-group">
+          <label for="{{ form.last_name.id_for_label }}" class="wire-form-label">{{ form.last_name.label }}</label>
+          <input type="text" name="{{ form.last_name.name }}" id="{{ form.last_name.id_for_label }}"
+                 value="{{ form.last_name.value|default:'' }}" class="wire-form-input">
+          {% if form.last_name.errors %}<p class="wire-form-error">{{ form.last_name.errors.0 }}</p>{% endif %}
+        </div>
+      </div>
+
+      <div class="wire-form-group">
+        <label for="{{ form.email.id_for_label }}" class="wire-form-label">{{ form.email.label }}</label>
+        <input type="email" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}"
+               value="{{ form.email.value|default:'' }}" class="wire-form-input">
+        {% if form.email.errors %}<p class="wire-form-error">{{ form.email.errors.0 }}</p>{% endif %}
+      </div>
+
+      <div class="wire-form-group">
+        <label for="{{ form.phone.id_for_label }}" class="wire-form-label">{{ form.phone.label }}</label>
+        <input type="text" name="{{ form.phone.name }}" id="{{ form.phone.id_for_label }}"
+               value="{{ form.phone.value|default:'' }}" class="wire-form-input" placeholder="+7 (999) 000-00-00">
+        {% if form.phone.errors %}<p class="wire-form-error">{{ form.phone.errors.0 }}</p>{% endif %}
+      </div>
+
+      <div class="wire-form-group">
+        <label for="{{ form.role.id_for_label }}" class="wire-form-label">{{ form.role.label }}</label>
+        <select name="{{ form.role.name }}" id="{{ form.role.id_for_label }}" class="wire-form-input">
+          {% for val, label in form.role.field.choices %}
+          <option value="{{ val }}" {% if form.role.value == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        {% if form.role.errors %}<p class="wire-form-error">{{ form.role.errors.0 }}</p>{% endif %}
+      </div>
+
+      <div class="wire-form-group" style="margin-top: 16px;">
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+          <input type="checkbox" name="{{ form.is_active.name }}" id="{{ form.is_active.id_for_label }}"
+                 {% if form.is_active.value %}checked{% endif %} style="width: 18px; height: 18px;">
+          <span style="font-size: 14px; font-weight: 600; color: var(--color-navy);">Учётная запись активна (вход разрешён)</span>
+        </label>
+      </div>
+
+      <div style="margin-top: 32px; display: flex; gap: 12px;">
+        <button type="submit" class="wire-btn wire-btn-primary" style="padding: 12px 28px;">
+          Сохранить изменения
+        </button>
+        <a href="{% url 'manage_users' %}" class="wire-btn wire-btn-secondary" style="padding: 12px 20px; text-decoration: none;">
+          Отмена
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

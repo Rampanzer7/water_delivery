@@ -1,54 +1,120 @@
 {% extends 'base.html' %}
-{% block title %}Мои заказы{% endblock %}
+{% load static %}
+
+{% block title %}История заказов | Святой Источник{% endblock %}
+
 {% block content %}
-<h1>Мои заказы</h1>
-<form class="filters" method="get">
-  <div class="field">
-    <label for="status">Статус</label>
-    <select id="status" name="status">
-      <option value="">Все</option>
-      {% for value, label in statuses %}<option value="{{ value }}" {% if status == value %} selected{% endif %}>{{ label
-        }}</option>{% endfor %}
-    </select>
+<div class="wire-container wire-page-container">
+  <h1 class="wire-page-title">История заказов</h1>
+  <p class="wire-page-subtitle">Все оформленные вами заказы воды и оборудования</p>
+
+  <div class="wire-profile-layout">
+    <aside class="wire-profile-sidebar desktop-only" aria-label="Меню личного кабинета">
+      <div class="wire-profile-menu-box">
+        <h2 class="wire-profile-menu-title">Мой кабинет</h2>
+        <nav class="wire-profile-nav-list">
+          <a href="{% url 'cabinet' %}" class="wire-profile-link">Профиль</a>
+          <a href="{% url 'cabinet_addresses' %}" class="wire-profile-link">Адреса доставки</a>
+          <a href="{% url 'cabinet_orders' %}" class="wire-profile-link active">История заказов</a>
+          <a href="{% url 'cabinet_balance' %}" class="wire-profile-link">Баланс тары</a>
+          <a href="{% url 'cabinet_rentals' %}" class="wire-profile-link">Договоры аренды</a>
+          <a href="{% url 'cabinet_schedules' %}" class="wire-profile-link">Регулярная доставка</a>
+          <form method="post" action="{% url 'logout' %}" class="wire-profile-logout-form">
+            {% csrf_token %}
+            <button type="submit" class="wire-profile-link wire-logout-link">Выход</button>
+          </form>
+        </nav>
+      </div>
+    </aside>
+
+    <div class="wire-profile-content">
+      <div class="wire-card" style="padding: 18px 24px; margin-bottom: 24px;">
+        <form method="get" style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 160px;">
+            <label for="id_status" style="display: block; font-size: 13px; font-weight: 600; color: var(--color-navy); margin-bottom: 6px;">Статус заказа</label>
+            <select id="id_status" name="status" class="wire-form-input" style="height: 40px;">
+              <option value="">Все статусы</option>
+              {% for val, label in statuses %}
+              <option value="{{ val }}" {% if status == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div style="flex: 1; min-width: 180px;">
+            <label for="id_sort" style="display: block; font-size: 13px; font-weight: 600; color: var(--color-navy); margin-bottom: 6px;">Сортировка</label>
+            <select id="id_sort" name="sort" class="wire-form-input" style="height: 40px;">
+              {% for val, label in sort_options %}
+              <option value="{{ val }}" {% if sort == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <button type="submit" class="wire-btn wire-btn-primary" style="height: 40px; padding: 0 20px;">Применить</button>
+          </div>
+        </form>
+      </div>
+
+      {% if page %}
+      <div class="wire-table-card">
+        <table class="wire-table">
+          <thead>
+            <tr>
+              <th>№</th>
+              <th>Дата и интервал</th>
+              <th>Адрес доставки</th>
+              <th>Бутылей</th>
+              <th>К оплате</th>
+              <th>Статус</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for order in page %}
+            <tr>
+              <td>
+                <a href="{% url 'cabinet_order_detail' order.pk %}" style="font-weight: 700; color: var(--color-primary); text-decoration: none;">
+                  №{{ order.pk }}
+                </a>
+              </td>
+              <td>{{ order.delivery_date|date:"d.m.Y" }} &bull; {{ order.slot }}</td>
+              <td>{{ order.address }}</td>
+              <td>{{ order.bottles_total }} шт.</td>
+              <td><strong>{{ order.total|floatformat:"-2" }} ₽</strong></td>
+              <td>
+                {% if order.status == 'delivered' %}
+                <span class="wire-badge wire-badge-green">Доставлен</span>
+                {% elif order.status == 'assigned' %}
+                <span class="wire-badge wire-badge-blue">У водителя</span>
+                {% else %}
+                <span class="wire-badge wire-badge-gray">Новый</span>
+                {% endif %}
+              </td>
+              <td>
+                <a href="{% url 'cabinet_order_detail' order.pk %}" class="wire-btn wire-btn-secondary" style="font-size: 12px; padding: 6px 12px; text-decoration: none;">
+                  Состав
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if page.has_other_pages %}
+      <div class="wire-pagination-wrap">
+        {% include 'app/_pagination.html' %}
+      </div>
+      {% endif %}
+
+      {% else %}
+      <div class="wire-card" style="padding: 40px; text-align: center;">
+        <h3 style="font-size: 18px; color: var(--color-navy); margin-top: 0; margin-bottom: 8px;">Заказы не найдены</h3>
+        <p style="font-size: 14px; color: var(--color-muted); margin-bottom: 20px;">Попробуйте сбросить фильтры или оформите новый заказ в каталоге.</p>
+        <a href="{% url 'catalog' %}" class="wire-btn wire-btn-primary" style="text-decoration: none;">В каталог товаров</a>
+      </div>
+      {% endif %}
+    </div>
   </div>
-  <div class="field">
-    <label for="sort">Сортировка</label>
-    <select id="sort" name="sort">
-      {% for value, label in sort_options %}<option value="{{ value }}" {% if sort == value %} selected{% endif %}>{{
-        label }}</option>{% endfor %}
-    </select>
-  </div>
-  <div class="field"><button class="button" type="submit">Применить</button></div>
-</form>
-{% if page %}
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th>№</th>
-        <th>Доставка</th>
-        <th>Адрес</th>
-        <th>Сумма</th>
-        <th>Статус</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for order in page %}
-      <tr>
-        <td>{{ order.pk }}</td>
-        <td>{{ order.delivery_date|date:"d.m.Y" }}, {{ order.slot }}</td>
-        <td>{{ order.address }}</td>
-        <td>{{ order.total|floatformat:"-2" }} ₽</td>
-        <td><span class="status {{ order.status }}">{{ order.get_status_display }}</span></td>
-        <td><a href="{% url 'order_detail' order.pk %}">Открыть</a></td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
 </div>
-{% include 'app/_pagination.html' %}
-{% else %}
-<p>Заказов пока нет. <a href="{% url 'catalog' %}">Выбрать воду</a></p>
-{% endif %}
 {% endblock %}

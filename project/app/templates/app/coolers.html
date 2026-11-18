@@ -1,20 +1,78 @@
 {% extends 'base.html' %}
-{% block title %}Аренда кулеров{% endblock %}
+{% load static %}
+
+{% block title %}Каталог кулеров для воды | Святой Источник{% endblock %}
+
 {% block content %}
-<h1>Аренда кулеров</h1>
-<div class="cards">
-  {% for cooler in coolers %}
-  <article class="card">
-    <h2>{{ cooler.name }}</h2>
-    <p class="muted">{{ cooler.description }}</p>
-    <p class="price">{{ cooler.monthly_price|floatformat:"-2" }} ₽ в месяц</p>
-    <p class="muted">Залог: {{ cooler.deposit|floatformat:"-2" }} ₽</p>
-    {% if cooler.quantity %}
-    <a class="button" href="{% url 'rent_cooler' cooler.pk %}">Арендовать</a>
-    {% else %}
-    <p class="muted">Сейчас нет в наличии</p>
-    {% endif %}
-  </article>
-  {% endfor %}
+<div class="wire-container wire-page-container">
+  <header class="wire-page-header">
+    <h1 class="wire-page-title">Каталог кулеров</h1>
+    <p class="wire-page-subtitle">Надёжные напольные и настольные аппараты Aqua для дома и офиса с бесплатной доставкой и обслуживанием</p>
+  </header>
+
+  <div class="wire-catalog-layout">
+    <aside class="wire-sidebar desktop-only" aria-label="Преимущества аренды кулеров">
+      <div class="wire-sidebar-box">
+        <h3 class="wire-sidebar-title">Преимущества</h3>
+        <ul style="padding-left: 18px; margin: 0 0 20px 0; font-size: 14px; line-height: 1.6; color: var(--color-text);">
+          <li style="margin-bottom: 8px;">Бесплатная доставка и подключение</li>
+          <li style="margin-bottom: 8px;">Гарантийное обслуживание на весь срок</li>
+          <li style="margin-bottom: 8px;">Регулярная санитарная обработка раз в 6 месяцев</li>
+          <li style="margin-bottom: 8px;">Замена аппарата при поломке за 24 часа</li>
+        </ul>
+        <div style="padding-top: 16px; border-top: 1px solid var(--color-border-light);">
+          <a href="{% url 'catalog' %}" class="wire-btn wire-btn-secondary" style="width: 100%; text-align: center; font-size: 14px;">К каталогу воды 19 л</a>
+        </div>
+      </div>
+    </aside>
+
+    <div class="wire-catalog-main">
+      <div class="wire-category-tags" aria-label="Категории каталога">
+        <a href="{% url 'coolers' %}" class="wire-pill active">Кулеры для воды</a>
+      </div>
+
+      <div class="wire-catalog-grid">
+        {% for cooler in coolers %}
+        <article class="wire-card wire-catalog-card {% if cooler.quantity <= 0 %}card-disabled{% endif %}">
+          <div class="wire-card-img-box">
+            <span class="wire-card-badge">{% if forloop.counter|divisibleby:2 %}Хит{% else %}Новинка{% endif %}</span>
+            <a href="{% url 'cooler_detail' cooler.pk %}">
+              <img src="{% static 'images/cooler.jpeg' %}" alt="{{ cooler.name }}" width="180" height="180" loading="lazy" class="wire-card-center-img">
+            </a>
+          </div>
+          <div class="wire-card-body">
+            <h2 class="wire-card-title">
+              <a href="{% url 'cooler_detail' cooler.pk %}">{{ cooler.name }}</a>
+            </h2>
+            <div class="wire-card-sub" style="font-size: 13px; color: var(--color-muted); line-height: 1.4; margin-bottom: 8px;">
+              {{ cooler.description|truncatechars:95 }}
+            </div>
+            <div style="font-size: 12px; color: var(--color-muted); margin-bottom: 4px;">
+              Залог за тару/оборудование: <strong>{{ cooler.deposit|floatformat:"-2" }} ₽</strong>
+            </div>
+          </div>
+          <div class="wire-card-action">
+            {% if cooler.quantity > 0 %}
+            <div class="wire-card-price">{{ cooler.monthly_price|floatformat:"-2" }} ₽/мес</div>
+            <a href="{% url 'cooler_detail' cooler.pk %}" class="wire-card-btn" style="text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center;">Арендовать</a>
+            {% else %}
+            <div class="wire-card-price wire-card-price-unavailable">Нет в наличии</div>
+            <button type="button" class="wire-card-btn" disabled>Арендовать</button>
+            {% endif %}
+          </div>
+        </article>
+        {% empty %}
+        <div class="wire-empty-state">
+          <p>{% if query %}По запросу «{{ query }}» кулеров не найдено.{% else %}Кулеров не найдено.{% endif %}</p>
+          {% if query %}
+          <div style="margin-top: 12px;">
+            <a class="wire-btn wire-btn-secondary" href="{% url 'coolers' %}">Показать все кулеры</a>
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Договор аренды №{{ rental.pk }} | Святой Источник{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-page-container">
+  <nav class="wire-breadcrumbs" aria-label="Хлебные крошки" style="margin-bottom: 16px; font-size: 13px; color: var(--color-muted);">
+    <a href="{% url 'cabinet' %}" style="color: var(--color-muted); text-decoration: none;">Кабинет</a> /
+    <a href="{% url 'cabinet_rentals' %}" style="color: var(--color-muted); text-decoration: none;">Договоры аренды</a> /
+    <span style="color: var(--color-text);">Договор №{{ rental.pk }}</span>
+  </nav>
+  <h1 class="wire-page-title">Договор аренды №{{ rental.pk }}</h1>
+  <p class="wire-page-subtitle">Подробная информация об арендованном оборудовании и сервисном обслуживании</p>
+
+  <div class="wire-profile-layout">
+    <aside class="wire-profile-sidebar desktop-only" aria-label="Меню личного кабинета">
+      <div class="wire-profile-menu-box">
+        <h2 class="wire-profile-menu-title">Мой кабинет</h2>
+        <nav class="wire-profile-nav-list">
+          <a href="{% url 'cabinet' %}" class="wire-profile-link">Профиль</a>
+          <a href="{% url 'cabinet_addresses' %}" class="wire-profile-link">Адреса доставки</a>
+          <a href="{% url 'cabinet_orders' %}" class="wire-profile-link">История заказов</a>
+          <a href="{% url 'cabinet_balance' %}" class="wire-profile-link">Баланс тары</a>
+          <a href="{% url 'cabinet_rentals' %}" class="wire-profile-link active">Договоры аренды</a>
+          <a href="{% url 'cabinet_schedules' %}" class="wire-profile-link">Регулярная доставка</a>
+          <form method="post" action="{% url 'logout' %}" class="wire-profile-logout-form">
+            {% csrf_token %}
+            <button type="submit" class="wire-profile-link wire-logout-link">Выход</button>
+          </form>
+        </nav>
+      </div>
+    </aside>
+
+    <div class="wire-profile-content">
+      <div class="wire-card" style="padding: 28px; margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 style="font-size: 20px; color: var(--color-navy); margin: 0 0 4px 0;">Условия договора</h2>
+            <div style="font-size: 14px; color: var(--color-muted);">Заключён: {{ rental.start_date|date:"j E Y" }}</div>
+          </div>
+          {% if rental.status == 'active' %}
+          <span class="wire-badge wire-badge-green" style="font-size: 14px; padding: 6px 12px;">Действует</span>
+          {% else %}
+          <span class="wire-badge wire-badge-gray" style="font-size: 14px; padding: 6px 12px;">Расторгнут</span>
+          {% endif %}
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; font-size: 14px; line-height: 1.6;">
+          <div>
+            <div style="color: var(--color-muted);">Модель кулера:</div>
+            <strong style="font-size: 16px; color: var(--color-navy);">{{ rental.cooler.name }}</strong>
+          </div>
+          <div>
+            <div style="color: var(--color-muted);">Адрес установки:</div>
+            <strong>{{ rental.address }}</strong>
+          </div>
+          <div>
+            <div style="color: var(--color-muted);">Ежемесячная оплата:</div>
+            <strong style="font-size: 16px; color: var(--color-navy);">{{ rental.monthly_price|floatformat:"-2" }} ₽ / мес</strong>
+          </div>
+          <div>
+            <div style="color: var(--color-muted);">Внесённый залог:</div>
+            <strong style="font-size: 16px; color: var(--color-navy);">{{ rental.deposit|floatformat:"-2" }} ₽</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="wire-card" style="padding: 28px; margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h3 style="font-size: 18px; color: var(--color-navy); margin: 0 0 4px 0;">Санитарная обработка кулера</h3>
+            <p style="font-size: 14px; color: var(--color-muted); margin: 0;">Для поддержания чистоты воды рекомендуется проводить дезинфекцию не реже одного раза в 6 месяцев</p>
+          </div>
+          {% if rental.status == 'active' %}
+          <a href="{% url 'cabinet_rental_service' rental.pk %}" class="wire-btn wire-btn-primary" style="text-decoration: none; padding: 10px 18px;">
+            + Подать заявку на санобработку
+          </a>
+          {% endif %}
+        </div>
+
+        {% if requests %}
+        <div class="wire-table-card" style="margin-top: 16px; margin-bottom: 0;">
+          <table class="wire-table">
+            <thead>
+              <tr>
+                <th>№ Заявки</th>
+                <th>Желаемая дата визита</th>
+                <th>Комментарий</th>
+                <th>Статус</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for req in requests %}
+              <tr>
+                <td>№{{ req.pk }}</td>
+                <td>{{ req.desired_date|date:"d.m.Y" }}</td>
+                <td>{{ req.comment|default:"—" }}</td>
+                <td>
+                  {% if req.status == 'done' %}
+                  <span class="wire-badge wire-badge-green">Выполнена</span>
+                  {% else %}
+                  <span class="wire-badge wire-badge-blue">Ожидает визита</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div style="background: var(--color-bg); padding: 16px; border-radius: 8px; font-size: 14px; color: var(--color-muted);">
+          Заявок на санитарную обработку по данному договору ещё не подавалось.
+        </div>
+        {% endif %}
+      </div>
+
+      <div>
+        <a href="{% url 'cabinet_rentals' %}" class="wire-btn wire-btn-secondary" style="text-decoration: none;">&larr; Назад к договорам</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -7,14 +7,12 @@
 <section class="wire-hero-section" aria-labelledby="hero-title">
   <div class="wire-container wire-hero-grid">
     <div class="wire-hero-content">
-      <div class="wire-hero-label">ДОСТАВКА ПИТЬЕВОЙ ВОДЫ<span class="desktop-inline"> И АРЕНДА КУЛЕРОВ</span></div>
       <h1 id="hero-title" class="wire-hero-title">Чистая вода —<br>прямо к <span class="desktop-inline">вашей </span>двери</h1>
       <p class="wire-hero-desc desktop-only">Вода 19 литров, удобные интервалы доставки и аренда<br>кулеров для дома и офиса.</p>
       <p class="wire-hero-desc mobile-only">Заказывайте воду 19 л и арендуйте кулер с<br>удобной доставкой.</p>
       <div class="wire-hero-actions">
         <a class="wire-btn" href="{% url 'catalog' %}">Выбрать воду</a>
-        <a class="wire-btn desktop-only" href="{% url 'coolers' %}">Арендовать кулер</a>
-        <a class="wire-btn mobile-only" href="{% url 'catalog' %}">Доставка по графику</a>
+        <a class="wire-btn wire-btn-cooler" href="{% url 'coolers' %}">Арендовать кулер</a>
       </div>
     </div>
 
@@ -50,11 +48,7 @@
         </div>
         <div class="wire-card-action">
           <div class="wire-card-price">от {{ product.price|floatformat:"-2" }} ₽</div>
-          <form method="post" action="{% url 'cart_add' product.pk %}" class="wire-card-form">
-            {% csrf_token %}
-            <input type="hidden" name="quantity" value="1">
-            <button type="submit" class="wire-card-btn">Купить</button>
-          </form>
+          <a class="wire-card-btn" href="{% url 'product_detail' product.pk %}">Купить</a>
         </div>
       </article>
       {% empty %}
@@ -115,7 +109,6 @@
 
 <section id="coolers" class="wire-section wire-section-coolers" aria-labelledby="heading-coolers">
   <div class="wire-container">
-    <div class="wire-section-label">ВЫБИРАЙТЕ</div>
     <h2 id="heading-coolers" class="wire-section-title">Если нужна аренда куллера</h2>
     <p class="wire-section-subtitle">Вода для дома и офиса — с доставкой по удобному графику</p>
 
@@ -127,12 +120,12 @@
           <img src="{% static 'images/cooler.jpeg' %}" alt="Кулер {{ cooler.name }}" width="90" height="90" loading="lazy" class="wire-card-center-img">
         </div>
         <div class="wire-card-body">
-          <h3 class="wire-card-title">{{ cooler.name }}</h3>
-          <div class="wire-card-sub">Аренда</div>
+          <h3 class="wire-card-title"><a href="{% url 'cooler_detail' cooler.pk %}">{{ cooler.name }}</a></h3>
+          <div class="wire-card-sub">Аренда кулера</div>
         </div>
         <div class="wire-card-action">
           <div class="wire-card-price">от {{ cooler.monthly_price|floatformat:"-2" }} ₽/мес</div>
-          <a class="wire-card-btn" href="{% url 'rent_cooler' cooler.pk %}">Арендовать</a>
+          <a class="wire-card-btn" href="{% url 'cooler_detail' cooler.pk %}">Арендовать</a>
         </div>
       </article>
       {% empty %}

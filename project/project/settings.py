@@ -99,3 +99,8 @@ LOGOUT_REDIRECT_URL = 'catalog'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'Святой источник <no-reply@svyatoy-istochnik.local>'
+
+AUTHENTICATION_BACKENDS = [
+    'app.backends.EmailOrUsernameModelBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]

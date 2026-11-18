@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Рабочее место оператора: заказы | Святой Источник{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-page-container">
+  <header class="wire-page-header">
+    <h1 class="wire-page-title">Рабочее место оператора</h1>
+    <p class="wire-page-subtitle">Управление заказами, распределение курьеров и контроль сервиса</p>
+  </header>
+
+  <div class="wire-category-tags" style="margin-bottom: 24px;">
+    <a href="{% url 'operator_orders' %}" class="wire-pill active">Заказы клиентов</a>
+    <a href="{% url 'operator_rentals' %}" class="wire-pill">Договоры аренды</a>
+    <a href="{% url 'operator_service' %}" class="wire-pill">Заявки на санобработку</a>
+  </div>
+
+  <div class="wire-card" style="padding: 20px 24px; margin-bottom: 24px;">
+    <form method="get" style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;">
+      <div style="flex: 1.5; min-width: 200px;">
+        <label for="q" style="display: block; font-size: 13px; font-weight: 600; color: var(--color-navy); margin-bottom: 6px;">Поиск</label>
+        <input id="q" type="text" name="q" value="{{ query }}" placeholder="№ заказа, логин или телефон" class="wire-form-input" style="height: 40px;">
+      </div>
+
+      <div style="flex: 1; min-width: 140px;">
+        <label for="status" style="display: block; font-size: 13px; font-weight: 600; color: var(--color-navy); margin-bottom: 6px;">Статус</label>
+        <select id="status" name="status" class="wire-form-input" style="height: 40px;">
+          <option value="">Все статусы</option>
+          {% for val, label in statuses %}
+          <option value="{{ val }}" {% if status == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="flex: 1; min-width: 140px;">
+        <label for="district" style="display: block; font-size: 13px; font-weight: 600; color: var(--color-navy); margin-bottom: 6px;">Район</label>
+        <select id="district" name="district" class="wire-form-input" style="height: 40px;">
+          <option value="">Все районы</option>
+          {% for item in districts %}
+          <option value="{{ item.pk }}" {% if district == item.pk %}selected{% endif %}>{{ item.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="flex: 1; min-width: 140px;">
+        <label for="date" style="display: block; font-size: 13px; font-weight: 600; color: var(--color-navy); margin-bottom: 6px;">Дата доставки</label>
+        <input id="date" type="date" name="date" value="{{ date }}" class="wire-form-input" style="height: 40px;">
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button type="submit" class="wire-btn wire-btn-primary" style="height: 40px; padding: 0 18px;">Найти</button>
+        <a href="{% url 'operator_orders' %}" class="wire-btn wire-btn-secondary" style="height: 40px; padding: 0 14px; text-decoration: none; display: flex; align-items: center;">Сброс</a>
+      </div>
+    </form>
+  </div>
+
+  {% if page %}
+  <div class="wire-table-card">
+    <table class="wire-table">
+      <thead>
+        <tr>
+          <th>№</th>
+          <th>Клиент / Телефон</th>
+          <th>Дата и слот</th>
+          <th>Адрес (район)</th>
+          <th>Сумма</th>
+          <th>Статус</th>
+          <th>Курьер</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in page %}
+        <tr>
+          <td>
+            <a href="{% url 'operator_order_detail' order.pk %}" style="font-weight: 700; color: var(--color-primary); text-decoration: none;">
+              №{{ order.pk }}
+            </a>
+          </td>
+          <td>
+            <strong style="color: var(--color-navy);">{{ order.user.username }}</strong>
+            {% if order.user.profile.phone %}<div style="font-size: 12px; color: var(--color-muted);">{{ order.user.profile.phone }}</div>{% endif %}
+          </td>
+          <td>{{ order.delivery_date|date:"d.m.Y" }} &bull; {{ order.slot }}</td>
+          <td>
+            <div>{{ order.address.street }}, д. {{ order.address.house }}</div>
+            <span class="wire-badge wire-badge-blue" style="font-size: 11px;">{{ order.address.district.name }}</span>
+          </td>
+          <td><strong>{{ order.total|floatformat:"-2" }} ₽</strong></td>
+          <td>
+            {% if order.status == 'delivered' %}
+            <span class="wire-badge wire-badge-green">Доставлен</span>
+            {% elif order.status == 'assigned' %}
+            <span class="wire-badge wire-badge-blue">У водителя</span>
+            {% else %}
+            <span class="wire-badge wire-badge-gray">Новый</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if order.status == 'new' %}
+            <form method="post" action="{% url 'operator_order_assign' order.pk %}" style="display: flex; gap: 6px; align-items: center;">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <select name="driver" class="wire-form-input" style="height: 32px; font-size: 12px; padding: 0 8px; width: 110px;">
+                {% for drv in drivers %}
+                <option value="{{ drv.pk }}">{{ drv.username }}</option>
+                {% endfor %}
+              </select>
+              <button type="submit" class="wire-btn wire-btn-primary" style="height: 32px; padding: 0 10px; font-size: 12px;">Назначить</button>
+            </form>
+            {% else %}
+            <span style="font-weight: 600; color: var(--color-navy);">{{ order.route_sheet.driver.username }}</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'operator_order_detail' order.pk %}" class="wire-btn wire-btn-secondary" style="font-size: 12px; padding: 6px 10px; text-decoration: none;">
+              Детали
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page.has_other_pages %}
+  <div class="wire-pagination-wrap">
+    {% include 'app/_pagination.html' %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="wire-card" style="padding: 40px; text-align: center;">
+    <h3 style="font-size: 18px; color: var(--color-navy); margin-top: 0;">Заказов по заданным критериям не найдено</h3>
+    <p style="font-size: 14px; color: var(--color-muted); margin-bottom: 0;">Попробуйте изменить параметры поиска или фильтров.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

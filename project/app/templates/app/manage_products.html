@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Каталог товаров | Администрирование{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-page-container">
+  <header class="wire-page-header">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <h1 class="wire-page-title">Каталог товаров</h1>
+        <p class="wire-page-subtitle">Управление позициями каталога, статусами публикации, остатками и ценами</p>
+      </div>
+      <a href="{% url 'manage_product_create' %}" class="wire-btn wire-btn-primary" style="text-decoration: none; padding: 10px 20px;">
+        + Добавить товар
+      </a>
+    </div>
+  </header>
+
+  <div class="wire-category-tags" style="margin-bottom: 24px;">
+    <a href="{% url 'manage_settings' %}" class="wire-pill">Настройки системы</a>
+    <a href="{% url 'manage_users' %}" class="wire-pill">Пользователи и роли</a>
+    <a href="{% url 'manage_products' %}" class="wire-pill active">Каталог товаров</a>
+    <a href="{% url 'manage_coolers' %}" class="wire-pill">Аренда кулеров</a>
+    <a href="{% url 'manage_intervals' %}" class="wire-pill">Интервалы доставки</a>
+    <a href="{% url 'manage_districts' %}" class="wire-pill">Районы города</a>
+  </div>
+
+  <div class="wire-card" style="padding: 20px 24px; margin-bottom: 24px;">
+    <form method="get" style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;">
+      <div style="flex: 2; min-width: 220px;">
+        <label for="q" style="display: block; font-size: 13px; font-weight: 600; color: var(--color-navy); margin-bottom: 6px;">Поиск</label>
+        <input id="q" type="text" name="q" value="{{ query }}" placeholder="Название товара" class="wire-form-input" style="height: 40px;">
+      </div>
+
+      <div style="flex: 1; min-width: 150px;">
+        <label for="kind" style="display: block; font-size: 13px; font-weight: 600; color: var(--color-navy); margin-bottom: 6px;">Категория</label>
+        <select id="kind" name="kind" class="wire-form-input" style="height: 40px;">
+          <option value="">Все категории</option>
+          <option value="water" {% if kind == 'water' %}selected{% endif %}>Вода</option>
+          <option value="cooler" {% if kind == 'cooler' %}selected{% endif %}>Кулеры</option>
+          <option value="accessory" {% if kind == 'accessory' %}selected{% endif %}>Аксессуары</option>
+        </select>
+      </div>
+
+      <div style="flex: 1; min-width: 150px;">
+        <label for="status" style="display: block; font-size: 13px; font-weight: 600; color: var(--color-navy); margin-bottom: 6px;">Статус</label>
+        <select id="status" name="status" class="wire-form-input" style="height: 40px;">
+          <option value="">Все статусы</option>
+          <option value="active" {% if status == 'active' %}selected{% endif %}>Опубликован</option>
+          <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Скрыт</option>
+        </select>
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button type="submit" class="wire-btn wire-btn-primary" style="height: 40px; padding: 0 18px;">Найти</button>
+        <a href="{% url 'manage_products' %}" class="wire-btn wire-btn-secondary" style="height: 40px; padding: 0 14px; text-decoration: none; display: flex; align-items: center;">Сброс</a>
+      </div>
+    </form>
+  </div>
+
+  {% if page %}
+  <div class="wire-table-card">
+    <table class="wire-table">
+      <thead>
+        <tr>
+          <th style="width: 60px;">Фото</th>
+          <th>Наименование</th>
+          <th>Категория</th>
+          <th>Объём</th>
+          <th>Цена</th>
+          <th>Залог за тару</th>
+          <th>Остаток</th>
+          <th>Статус</th>
+          <th style="text-align: right;">Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in page %}
+        <tr>
+          <td>
+            {% if p.photo %}
+              <img src="{{ p.photo.url }}" alt="{{ p.name }}" style="width: 44px; height: 44px; object-fit: contain; border-radius: 6px; background: #f8fafc; border: 1px solid #e2e8f0;">
+            {% else %}
+              <div style="width: 44px; height: 44px; background: #e2e8f0; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 18px;">💧</div>
+            {% endif %}
+          </td>
+          <td>
+            <strong>{{ p.name }}</strong>
+          </td>
+          <td>
+            <span class="wire-badge" style="background: #f1f5f9; color: #334155;">{{ p.get_kind_display }}</span>
+          </td>
+          <td>{{ p.volume|default:"—" }} л</td>
+          <td><strong style="color: var(--color-navy);">{{ p.price }} ₽</strong></td>
+          <td>{{ p.deposit_price }} ₽</td>
+          <td>
+            {% if p.stock > 5 %}
+              <span style="color: #16a34a; font-weight: 600;">{{ p.stock }} шт.</span>
+            {% elif p.stock > 0 %}
+              <span style="color: #d97706; font-weight: 600;">{{ p.stock }} шт.</span>
+            {% else %}
+              <span style="color: #dc2626; font-weight: 600;">0 шт.</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if p.is_active %}
+              <span class="wire-badge wire-badge-delivered">Опубликован</span>
+            {% else %}
+              <span class="wire-badge wire-badge-cancelled">Скрыт</span>
+            {% endif %}
+          </td>
+          <td style="text-align: right;">
+            <div style="display: flex; gap: 6px; justify-content: flex-end;">
+              <a href="{% url 'manage_product_edit' p.pk %}" class="wire-btn wire-btn-secondary" style="font-size: 13px; padding: 6px 12px; text-decoration: none;">
+                Изменить
+              </a>
+              <a href="{% url 'manage_product_delete' p.pk %}" class="wire-btn" style="font-size: 13px; padding: 6px 12px; text-decoration: none; color: #dc2626; background: #fee2e2; border-color: #fca5a5;">
+                Удалить
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include 'app/_pagination.html' %}
+  {% else %}
+  <div class="wire-empty-state">
+    <div class="wire-empty-icon">📦</div>
+    <h3 class="wire-empty-title">Товары не найдены</h3>
+    <p class="wire-empty-text">Добавьте первый товар или измените параметры фильтра.</p>
+    <a href="{% url 'manage_product_create' %}" class="wire-btn wire-btn-primary" style="text-decoration: none; margin-top: 16px;">
+      + Добавить товар
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

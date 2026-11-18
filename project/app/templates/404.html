@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}404 — Страница не найдена | Святой Источник{% endblock %}
+
+{% block content %}
+<div class="wire-container">
+  <div class="wire-error-page">
+    <div class="wire-error-code">404</div>
+    <h1 class="wire-page-title" style="margin-bottom: 12px;">Страница не найдена</h1>
+    <p class="wire-page-subtitle" style="margin-bottom: 24px;">Запрашиваемая страница перемещена или никогда не существовала. Проверьте правильность адреса или воспользуйтесь каталогом.</p>
+    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+      <a class="wire-btn wire-btn-primary" href="{% url 'home' %}">На главную</a>
+      <a class="wire-btn wire-btn-secondary" href="{% url 'catalog' %}">В каталог воды</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

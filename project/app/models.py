@@ -43,6 +43,7 @@ class Product(models.Model):
     deposit_price = models.DecimalField('Залог за бутыль', max_digits=8, decimal_places=2, default=0)
     stock = models.PositiveIntegerField('Остаток на складе', default=0)
     description = models.TextField('Описание', blank=True)
+    photo = models.FileField('Фото товара', upload_to='products/', validators=[validate_image], blank=True, null=True)
     is_active = models.BooleanField('Продаётся', default=True)
     search_text = models.TextField(editable=False, default='')
 
@@ -65,6 +66,7 @@ class Cooler(models.Model):
     monthly_price = models.DecimalField('Аренда в месяц', max_digits=8, decimal_places=2)
     deposit = models.DecimalField('Залог', max_digits=8, decimal_places=2, default=0)
     quantity = models.PositiveIntegerField('Свободно на складе', default=0)
+    photo = models.FileField('Фото кулера', upload_to='coolers/', validators=[validate_image], blank=True, null=True)
 
     class Meta:
         verbose_name = 'Кулер'
@@ -236,3 +238,45 @@ class SanitationRequest(models.Model):
 
     def __str__(self):
         return f'Заявка №{self.pk}'
+
+
+class DeliverySchedule(models.Model):
+    WEEKDAY_CHOICES = [
+        (1, 'Каждый понедельник'),
+        (2, 'Каждый вторник'),
+        (3, 'Каждую среду'),
+        (4, 'Каждый четверг'),
+        (5, 'Каждую пятницу'),
+        (6, 'Каждую субботу'),
+        (7, 'Каждое воскресенье'),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='schedules')
+    address = models.ForeignKey(Address, on_delete=models.CASCADE, verbose_name='Адрес доставки')
+    product = models.ForeignKey(Product, on_delete=models.PROTECT, verbose_name='Товар')
+    quantity = models.PositiveIntegerField('Количество бутылей', default=2)
+    slot = models.ForeignKey(DeliverySlot, on_delete=models.PROTECT, verbose_name='Интервал доставки')
+    weekday = models.PositiveSmallIntegerField('Периодичность', choices=WEEKDAY_CHOICES, default=1)
+    is_active = models.BooleanField('Активен', default=True)
+    created_at = models.DateTimeField('Создан', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'График доставки'
+        verbose_name_plural = 'Графики доставки'
+        ordering = ['weekday', 'id']
+
+    def __str__(self):
+        return f'{self.get_weekday_display()} — {self.product.name} × {self.quantity}'
+
+
+class SiteSetting(models.Model):
+    key = models.CharField('Ключ', max_length=50, unique=True)
+    value = models.CharField('Значение', max_length=255)
+    description = models.CharField('Описание', max_length=255, blank=True)
+
+    class Meta:
+        verbose_name = 'Настройка сайта'
+        verbose_name_plural = 'Настройки сайта'
+
+    def __str__(self):
+        return f'{self.key}: {self.value}'

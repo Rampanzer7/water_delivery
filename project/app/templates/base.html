@@ -20,20 +20,29 @@
       </a>
 
       <nav class="wire-nav-center desktop-nav" aria-label="Основная навигация">
-        <a class="wire-nav-link" href="{% url 'catalog' %}">Вода и кулеры</a>
-        <a class="wire-nav-link" href="#contacts">Доставка и оплата</a>
-        <a class="wire-nav-link" href="#contacts">Контакты</a>
+        <a class="wire-nav-link" href="{% url 'catalog' %}">Каталог воды</a>
+        <a class="wire-nav-link" href="{% url 'coolers' %}">Аренда кулеров</a>
       </nav>
 
       <div class="wire-header-right desktop-nav">
         {% if user.is_authenticated %}
-        <a class="wire-nav-link" href="{% url 'profile' %}">Кабинет ({{ user.username }})</a>
+        {% if user_is_admin %}
+        <a class="wire-nav-link" href="{% url 'manage_dashboard' %}">Админка</a>
+        {% endif %}
+        {% if user_is_dispatcher %}
+        <a class="wire-nav-link" href="{% url 'operator_orders' %}">Оператор</a>
+        {% endif %}
+        {% if user_is_driver %}
+        <a class="wire-nav-link" href="{% url 'courier_deliveries' %}">Курьер</a>
+        {% endif %}
+        <a class="wire-nav-link" href="{% url 'cabinet' %}">Кабинет ({{ user.username }})</a>
         <form class="inline-form" method="post" action="{% url 'logout' %}">
           {% csrf_token %}
           <button class="wire-nav-link logout-btn" type="submit">Выйти</button>
         </form>
         {% else %}
-        <a class="wire-nav-link" href="{% url 'login' %}">Кабинет</a>
+        <a class="wire-nav-link" href="{% url 'login' %}">Войти</a>
+        <a class="wire-nav-link" href="{% url 'register' %}">Регистрация</a>
         {% endif %}
         <a class="wire-btn wire-btn-sm" href="{% url 'cart' %}">Заказать</a>
       </div>
@@ -48,18 +57,30 @@
     </div>
 
     <nav id="mobileNav" class="mobile-menu" aria-label="Мобильное меню">
-      <a class="wire-nav-link" href="{% url 'catalog' %}">Вода и кулеры</a>
-      <a class="wire-nav-link" href="#contacts">Доставка и оплата</a>
-      <a class="wire-nav-link" href="#contacts">Контакты</a>
+      <a class="wire-nav-link" href="{% url 'catalog' %}">Каталог воды</a>
+      <a class="wire-nav-link" href="{% url 'coolers' %}">Аренда кулеров</a>
       {% if user.is_authenticated %}
-      <a class="wire-nav-link" href="{% url 'profile' %}">Кабинет ({{ user.username }})</a>
-      <a class="wire-nav-link" href="{% url 'my_orders' %}">Мои заказы</a>
+      <a class="wire-nav-link" href="{% url 'cabinet' %}">Кабинет ({{ user.username }})</a>
+      <a class="wire-nav-link" href="{% url 'cabinet_orders' %}">Мои заказы</a>
+      <a class="wire-nav-link" href="{% url 'cabinet_balance' %}">Баланс тары</a>
+      <a class="wire-nav-link" href="{% url 'cabinet_rentals' %}">Аренда кулеров</a>
+      <a class="wire-nav-link" href="{% url 'cabinet_schedules' %}">Регулярная доставка</a>
+      {% if user_is_admin %}
+      <a class="wire-nav-link" href="{% url 'manage_dashboard' %}">Панель администратора</a>
+      {% endif %}
+      {% if user_is_dispatcher %}
+      <a class="wire-nav-link" href="{% url 'operator_orders' %}">Рабочее место оператора</a>
+      {% endif %}
+      {% if user_is_driver %}
+      <a class="wire-nav-link" href="{% url 'courier_deliveries' %}">Доставки курьера</a>
+      {% endif %}
       <form class="inline-form" method="post" action="{% url 'logout' %}">
         {% csrf_token %}
         <button class="wire-nav-link logout-btn" type="submit">Выйти</button>
       </form>
       {% else %}
-      <a class="wire-nav-link" href="{% url 'login' %}">Кабинет</a>
+      <a class="wire-nav-link" href="{% url 'login' %}">Войти</a>
+      <a class="wire-nav-link" href="{% url 'register' %}">Регистрация</a>
       {% endif %}
       <a class="wire-btn" href="{% url 'cart' %}">Заказать</a>
     </nav>
@@ -76,10 +97,10 @@
     {% block content %}{% endblock %}
   </main>
 
-  <footer id="contacts" class="wire-footer">
+  <footer class="wire-footer">
     <div class="wire-container">
       <div class="wire-footer-line wire-footer-title">Святой Источник - Вода, доставка, аренда кулеров</div>
-      <div class="wire-footer-line wire-footer-sub">Поддержка: ежедневно 08:00–20:00 | <a href="#contacts" class="footer-link">Условия и контакты</a></div>
+      <div class="wire-footer-line wire-footer-sub">Поддержка: ежедневно 08:00–20:00 | <a href="{% url 'conditions' %}" class="footer-link">Условия и контакты</a></div>
       <div class="wire-footer-line wire-footer-copy">©2026 Политика конфиденциальности</div>
     </div>
   </footer>

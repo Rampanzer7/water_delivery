@@ -17,6 +17,10 @@ def is_driver(user):
     return user.is_authenticated and user.groups.filter(name=DRIVER_GROUP).exists()
 
 
+def is_admin(user):
+    return user.is_authenticated and (user.is_superuser or user.is_staff)
+
+
 def is_staff_member(user):
     return is_dispatcher(user) or is_driver(user)
 

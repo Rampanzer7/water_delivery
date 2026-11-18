@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Пользователи и роли | Панель администратора{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-page-container">
+  <header class="wire-page-header">
+    <h1 class="wire-page-title">Пользователи и роли</h1>
+    <p class="wire-page-subtitle">Управление учётными записями, назначение ролей и контактные данные</p>
+  </header>
+
+  <div class="wire-category-tags" style="margin-bottom: 24px;">
+    <a href="{% url 'manage_settings' %}" class="wire-pill">Настройки системы</a>
+    <a href="{% url 'manage_users' %}" class="wire-pill active">Пользователи и роли</a>
+    <a href="{% url 'manage_products' %}" class="wire-pill">Каталог товаров</a>
+    <a href="{% url 'manage_coolers' %}" class="wire-pill">Аренда кулеров</a>
+    <a href="{% url 'manage_intervals' %}" class="wire-pill">Интервалы доставки</a>
+    <a href="{% url 'manage_districts' %}" class="wire-pill">Районы города</a>
+  </div>
+
+  <div class="wire-card" style="padding: 20px 24px; margin-bottom: 24px;">
+    <form method="get" style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;">
+      <div style="flex: 2; min-width: 220px;">
+        <label for="q" style="display: block; font-size: 13px; font-weight: 600; color: var(--color-navy); margin-bottom: 6px;">Поиск</label>
+        <input id="q" type="text" name="q" value="{{ query }}" placeholder="Логин, email или телефон" class="wire-form-input" style="height: 40px;">
+      </div>
+
+      <div style="flex: 1; min-width: 160px;">
+        <label for="role" style="display: block; font-size: 13px; font-weight: 600; color: var(--color-navy); margin-bottom: 6px;">Роль</label>
+        <select id="role" name="role" class="wire-form-input" style="height: 40px;">
+          <option value="">Все роли</option>
+          <option value="admin" {% if role == 'admin' %}selected{% endif %}>Администратор</option>
+          <option value="dispatcher" {% if role == 'dispatcher' %}selected{% endif %}>Диспетчер / Оператор</option>
+          <option value="driver" {% if role == 'driver' %}selected{% endif %}>Водитель / Курьер</option>
+          <option value="client" {% if role == 'client' %}selected{% endif %}>Клиент</option>
+        </select>
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button type="submit" class="wire-btn wire-btn-primary" style="height: 40px; padding: 0 18px;">Найти</button>
+        <a href="{% url 'manage_users' %}" class="wire-btn wire-btn-secondary" style="height: 40px; padding: 0 14px; text-decoration: none; display: flex; align-items: center;">Сброс</a>
+      </div>
+    </form>
+  </div>
+
+  {% if page %}
+  <div class="wire-table-card">
+    <table class="wire-table">
+      <thead>
+        <tr>
+          <th>Пользователь</th>
+          <th>ФИО</th>
+          <th>Роль</th>
+          <th>Телефон</th>
+          <th>Email</th>
+          <th>Статус</th>
+          <th>Дата регистр.</th>
+          <th style="text-align: right;">Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in page %}
+        <tr>
+          <td>
+            <strong>{{ u.username }}</strong>
+          </td>
+          <td>{{ u.get_full_name|default:"—" }}</td>
+          <td>
+            {% if u.is_superuser %}
+              <span class="wire-badge wire-badge-assigned" style="background: #fdf2f8; color: #be185d; border-color: #fbcfe8;">Администратор</span>
+            {% elif u.groups.all.0.name == 'Диспетчер' %}
+              <span class="wire-badge wire-badge-in-progress">Оператор</span>
+            {% elif u.groups.all.0.name == 'Водитель' %}
+              <span class="wire-badge wire-badge-assigned">Курьер</span>
+            {% else %}
+              <span class="wire-badge" style="background: #f8fafc; color: #475569; border-color: #cbd5e1;">Клиент</span>
+            {% endif %}
+          </td>
+          <td>{{ u.profile.phone|default:"—" }}</td>
+          <td>{{ u.email|default:"—" }}</td>
+          <td>
+            {% if u.is_active %}
+              <span style="color: #16a34a; font-weight: 600; font-size: 13px;">● Активен</span>
+            {% else %}
+              <span style="color: #94a3b8; font-weight: 600; font-size: 13px;">○ Заблокирован</span>
+            {% endif %}
+          </td>
+          <td style="font-size: 13px; color: var(--color-slate);">{{ u.date_joined|date:"d.m.Y" }}</td>
+          <td style="text-align: right;">
+            <a href="{% url 'manage_user_edit' u.pk %}" class="wire-btn wire-btn-secondary" style="font-size: 13px; padding: 6px 14px; text-decoration: none;">
+              Изменить
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include 'app/_pagination.html' %}
+  {% else %}
+  <div class="wire-empty-state">
+    <div class="wire-empty-icon">👥</div>
+    <h3 class="wire-empty-title">Пользователи не найдены</h3>
+    <p class="wire-empty-text">Попробуйте изменить параметры поиска или фильтрации.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ cooler.name }} — Карточка кулера | Святой Источник{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-page-container">
+  <nav class="wire-breadcrumbs" aria-label="Хлебные крошки" style="margin-bottom: 16px; font-size: 13px; color: var(--color-muted);">
+    <a href="{% url 'home' %}" style="color: var(--color-muted); text-decoration: none;">Главная</a> /
+    <a href="{% url 'coolers' %}" style="color: var(--color-muted); text-decoration: none;">Каталог кулеров</a> /
+    <span style="color: var(--color-text);">{{ cooler.name }}</span>
+  </nav>
+
+  <h1 class="wire-page-title" style="margin-bottom: 24px;">{{ cooler.name }}</h1>
+
+  <div class="wire-detail-layout" style="display: grid; grid-template-columns: minmax(320px, 1fr) 1.2fr; gap: 40px; align-items: start;">
+    <div class="wire-detail-media" style="background: #ffffff; border: 1px solid var(--color-border-light); border-radius: 12px; padding: 40px; display: flex; justify-content: center; align-items: center; box-shadow: var(--shadow-sm);">
+      <img src="{% static 'images/cooler.jpeg' %}" alt="{{ cooler.name }}" width="320" height="320" style="max-width: 100%; height: auto; object-fit: contain;">
+    </div>
+
+    <div class="wire-detail-info" style="background: #ffffff; border: 1px solid var(--color-border-light); border-radius: 12px; padding: 32px; box-shadow: var(--shadow-sm);">
+      <div style="font-size: 32px; font-weight: 700; color: var(--color-navy); margin-bottom: 12px;">
+        {{ cooler.monthly_price|floatformat:"-2" }} ₽ <span style="font-size: 18px; font-weight: 400; color: var(--color-muted);">/ месяц</span>
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        {% if cooler.quantity > 0 %}
+        <span class="wire-badge wire-badge-green" style="font-size: 13px; padding: 6px 12px;">В наличии ({{ cooler.quantity }} шт. на складе)</span>
+        {% else %}
+        <span class="wire-badge wire-badge-orange" style="font-size: 13px; padding: 6px 12px;">Нет в наличии</span>
+        {% endif %}
+      </div>
+
+      <div style="font-size: 15px; color: var(--color-text); margin-bottom: 20px; line-height: 1.5; padding: 12px 16px; background: var(--color-sky); border-radius: 8px;">
+        <strong>Залог за оборудование:</strong> {{ cooler.deposit|floatformat:"-2" }} ₽ (возвращается при окончании срока аренды)
+      </div>
+
+      <div style="margin-bottom: 24px;">
+        <h3 style="font-size: 18px; color: var(--color-navy); margin-top: 0; margin-bottom: 8px;">Техническое описание и характеристики</h3>
+        <p style="font-size: 15px; color: var(--color-text); line-height: 1.6; margin: 0;">
+          {{ cooler.description }}
+        </p>
+      </div>
+
+      <div style="border-top: 1px solid var(--color-border-light); padding-top: 24px; display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
+        {% if cooler.quantity > 0 %}
+        <a href="{% url 'rent_cooler' cooler.pk %}" class="wire-btn wire-btn-primary" style="padding: 12px 28px; font-size: 16px; text-decoration: none;">
+          Оформить аренду
+        </a>
+        {% else %}
+        <button type="button" class="wire-btn" disabled style="padding: 12px 28px; font-size: 16px;">
+          Временно недоступен
+        </button>
+        {% endif %}
+        <a href="{% url 'coolers' %}" class="wire-btn wire-btn-secondary" style="padding: 12px 20px; font-size: 15px; text-decoration: none;">
+          &larr; Назад к кулерам
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

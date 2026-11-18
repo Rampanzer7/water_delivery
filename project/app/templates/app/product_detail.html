@@ -6,7 +6,7 @@
 {% block content %}
 <div class="wire-container wire-page-container">
   <nav class="wire-breadcrumbs" aria-label="Хлебные крошки">
-    <a href="{% url 'catalog' %}">КАТАЛОГ</a> / <a href="{% url 'catalog' %}?kind={{ product.kind }}">{% if product.kind == 'cooler' or 'кулер' in product.name|lower %}КУЛЕРЫ{% else %}ВОДА{% endif %}</a>
+    <a href="{% url 'home' %}">Главная</a> / <a href="{% url 'catalog' %}">Каталог воды</a> / <span>{{ product.name }}</span>
   </nav>
 
   <header class="wire-product-detail-header">
@@ -44,6 +44,16 @@
         {% endif %}
       </p>
 
+      {% if product.kind == 'cooler' or 'кулер' in product.name|lower %}
+      <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+        {% if cooler %}
+        <a href="{% url 'cooler_detail' cooler.pk %}" class="wire-btn wire-btn-primary" style="padding: 12px 28px; text-decoration: none;">Арендовать кулер</a>
+        <a href="{% url 'cooler_detail' cooler.pk %}" class="wire-btn wire-btn-secondary" style="padding: 12px 20px; text-decoration: none;">Характеристики</a>
+        {% else %}
+        <a href="{% url 'coolers' %}" class="wire-btn wire-btn-primary" style="padding: 12px 28px; text-decoration: none;">Перейти к аренде кулера</a>
+        {% endif %}
+      </div>
+      {% else %}
       <form method="post" action="{% url 'cart_add' product.pk %}" class="wire-detail-form">
         {% csrf_token %}
         <div class="wire-qty-block desktop-only">
@@ -58,6 +68,7 @@
         <button type="submit" class="wire-btn wire-btn-detail desktop-only">Добавить в заказ</button>
         <button type="submit" class="wire-btn wire-btn-detail wire-btn-block mobile-only">Заказать</button>
       </form>
+      {% endif %}
 
       <p class="wire-detail-mobile-note mobile-only">
         Доставка выбирается при оформлении заказа. Количество и залог пересчитываются автоматически.

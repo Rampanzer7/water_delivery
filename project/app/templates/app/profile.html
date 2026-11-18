@@ -5,56 +5,47 @@
 
 {% block content %}
 <div class="wire-container wire-page-container">
-  <div class="wire-section-label">КЛИЕНТ</div>
   <h1 class="wire-page-title">Личный кабинет</h1>
   <p class="wire-page-subtitle">Здравствуйте, {{ user.first_name|default:user.username }}!</p>
 
-    <div class="wire-profile-mobile-nav mobile-only">
-    <a href="{% url 'profile' %}" class="wire-profile-nav-btn active">
+  <div class="wire-profile-mobile-nav mobile-only">
+    <a href="{% url 'cabinet' %}" class="wire-profile-nav-btn active">
       <span>Профиль</span>
       <span class="wire-chevron" aria-hidden="true">&rsaquo;</span>
     </a>
-    <a href="{% url 'address_list' %}" class="wire-profile-nav-btn">
+    <a href="{% url 'cabinet_addresses' %}" class="wire-profile-nav-btn">
       <span>Адреса доставки</span>
       <span class="wire-chevron" aria-hidden="true">&rsaquo;</span>
     </a>
-    <a href="{% url 'my_orders' %}" class="wire-profile-nav-btn">
+    <a href="{% url 'cabinet_orders' %}" class="wire-profile-nav-btn">
       <span>История заказов</span>
       <span class="wire-chevron" aria-hidden="true">&rsaquo;</span>
     </a>
-    <a href="#tar-balance" class="wire-profile-nav-btn">
+    <a href="{% url 'cabinet_balance' %}" class="wire-profile-nav-btn">
       <span>Баланс тары</span>
       <span class="wire-chevron" aria-hidden="true">&rsaquo;</span>
     </a>
-    <a href="{% url 'my_rentals' %}" class="wire-profile-nav-btn">
+    <a href="{% url 'cabinet_rentals' %}" class="wire-profile-nav-btn">
       <span>Договоры аренды</span>
       <span class="wire-chevron" aria-hidden="true">&rsaquo;</span>
     </a>
-    <a href="{% url 'catalog' %}" class="wire-profile-nav-btn">
+    <a href="{% url 'cabinet_schedules' %}" class="wire-profile-nav-btn">
       <span>Регулярная доставка</span>
       <span class="wire-chevron" aria-hidden="true">&rsaquo;</span>
     </a>
   </div>
 
-    <div class="wire-profile-mobile-stat mobile-only" id="tar-balance-mobile">
-    <div class="wire-profile-stat-box">
-      <h2 class="wire-stat-header">Баланс тары</h2>
-      <div class="wire-stat-line">На руках: {{ balance }} бутыл{{ balance|pluralize:"ь,и,ей" }}</div>
-      <div class="wire-stat-line">Залог: {{ deposit_amount|floatformat:"-2" }} ₽</div>
-    </div>
-  </div>
-
-    <div class="wire-profile-layout desktop-only">
-        <aside class="wire-profile-sidebar" aria-label="Меню личного кабинета">
+  <div class="wire-profile-layout">
+    <aside class="wire-profile-sidebar desktop-only" aria-label="Меню личного кабинета">
       <div class="wire-profile-menu-box">
         <h2 class="wire-profile-menu-title">Мой кабинет</h2>
         <nav class="wire-profile-nav-list">
-          <a href="{% url 'profile' %}" class="wire-profile-link active">Профиль</a>
-          <a href="{% url 'address_list' %}" class="wire-profile-link">Адреса доставки</a>
-          <a href="{% url 'my_orders' %}" class="wire-profile-link">История заказов</a>
-          <a href="#tar-balance" class="wire-profile-link">Баланс тары</a>
-          <a href="{% url 'my_rentals' %}" class="wire-profile-link">Договоры аренды</a>
-          <a href="{% url 'catalog' %}" class="wire-profile-link">Регулярная доставка</a>
+          <a href="{% url 'cabinet' %}" class="wire-profile-link active">Профиль</a>
+          <a href="{% url 'cabinet_addresses' %}" class="wire-profile-link">Адреса доставки</a>
+          <a href="{% url 'cabinet_orders' %}" class="wire-profile-link">История заказов</a>
+          <a href="{% url 'cabinet_balance' %}" class="wire-profile-link">Баланс тары</a>
+          <a href="{% url 'cabinet_rentals' %}" class="wire-profile-link">Договоры аренды</a>
+          <a href="{% url 'cabinet_schedules' %}" class="wire-profile-link">Регулярная доставка</a>
           <form method="post" action="{% url 'logout' %}" class="wire-profile-logout-form">
             {% csrf_token %}
             <button type="submit" class="wire-profile-link wire-logout-link">Выход</button>
@@ -63,51 +54,67 @@
       </div>
     </aside>
 
-        <div class="wire-profile-content">
-            <div class="wire-profile-welcome-box">
+    <div class="wire-profile-content">
+      <div class="wire-profile-welcome-box">
         <h2 class="wire-welcome-title">Добро пожаловать, {{ user.first_name|default:user.username }}!</h2>
-        <p class="wire-welcome-desc">Здесь вы можете управлять адресами, заказами и арендой.</p>
+        <p class="wire-welcome-desc">Здесь вы можете управлять адресами, заказами, тарой и договорами аренды оборудования.</p>
+        <div style="margin-top: 12px; font-size: 14px; color: var(--color-muted);">
+          <span>Телефон: <strong>{{ user.profile.phone|default:"Не указан" }}</strong></span> &bull;
+          <span>Email: <strong>{{ user.email|default:"Не указан" }}</strong></span> &bull;
+          <a href="{% url 'password_change' %}" style="color: var(--color-primary); text-decoration: none; font-weight: 500;">Сменить пароль</a>
+        </div>
       </div>
 
-            <div class="wire-profile-stats-grid" id="tar-balance">
-                <div class="wire-profile-stat-box">
+      <div class="wire-profile-stats-grid">
+        <a href="{% url 'cabinet_balance' %}" class="wire-profile-stat-box" style="text-decoration: none; display: block; color: inherit;">
           <h3 class="wire-stat-label">Баланс тары</h3>
           <div class="wire-stat-value">{{ balance }} бутыл{{ balance|pluralize:"ь,и,ей" }}</div>
-          <div class="wire-stat-sub">Залог: {{ deposit_amount|floatformat:"-2" }} ₽</div>
-        </div>
+          <div class="wire-stat-sub">Залог: {{ deposit_amount|floatformat:"-2" }} ₽ &rarr;</div>
+        </a>
 
-                <div class="wire-profile-stat-box">
+        <a href="{% url 'cabinet_orders' %}" class="wire-profile-stat-box" style="text-decoration: none; display: block; color: inherit;">
           <h3 class="wire-stat-label">Активные заказы</h3>
           <div class="wire-stat-value">
             {% if active_orders_count %}{{ active_orders_count }} заказ{% else %}0 заказов{% endif %}
           </div>
           {% if active_orders_count %}
-          <div class="wire-stat-tag-wrap"><span class="wire-stat-badge">В доставке</span></div>
+          <div class="wire-stat-tag-wrap"><span class="wire-stat-badge">В доставке &rarr;</span></div>
           {% else %}
-          <div class="wire-stat-sub">Нет заказов в пути</div>
+          <div class="wire-stat-sub">Все доставлены &rarr;</div>
           {% endif %}
-        </div>
+        </a>
 
-                <div class="wire-profile-stat-box">
+        <a href="{% url 'cabinet_rentals' %}" class="wire-profile-stat-box" style="text-decoration: none; display: block; color: inherit;">
           <h3 class="wire-stat-label">Договоры аренды</h3>
           <div class="wire-stat-value">
-            {% if active_rentals %}{{ active_rentals }} договор{% else %}Нет активных{% endif %}
+            {% if active_rentals %}{{ active_rentals }} договор{% else %}0 договоров{% endif %}
           </div>
           {% if active_rentals %}
-          <div class="wire-stat-sub"><a href="{% url 'my_rentals' %}">Перейти к кулерам</a></div>
+          <div class="wire-stat-sub">Действуют &rarr;</div>
+          {% else %}
+          <div class="wire-stat-sub">Выбрать кулер &rarr;</div>
           {% endif %}
-        </div>
+        </a>
       </div>
 
-            <div class="wire-profile-recent-box">
-        <h3 class="wire-recent-order-title">
-          Последний заказ {% if last_order %}№ WD-{{ last_order.pk|stringformat:"03d" }}{% else %}№ WD-015{% endif %}
-        </h3>
+      <div class="wire-profile-recent-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+          <h3 class="wire-recent-order-title" style="margin: 0;">
+            {% if last_order %}
+            Последний заказ №{{ last_order.pk }} ({{ last_order.get_status_display }})
+            {% else %}
+            История заказов пуста
+            {% endif %}
+          </h3>
+          {% if last_order %}
+          <a href="{% url 'cabinet_order_detail' last_order.pk %}" style="font-size: 14px; color: var(--color-primary); text-decoration: none; font-weight: 600;">Подробнее &rarr;</a>
+          {% endif %}
+        </div>
         <p class="wire-recent-order-desc">
           {% if last_order %}
-            {{ last_order.items.first.product.name|default:"Вода «Горная»" }} • {{ last_order.bottles_total }} бутыл{{ last_order.bottles_total|pluralize:"ь,и,ей" }} • {{ last_order.delivery_date|date:"j E" }}, {{ last_order.slot }}
+            {{ last_order.address }} &bull; {{ last_order.delivery_date|date:"j E Y" }}, {{ last_order.slot }} &bull; <strong>{{ last_order.total|floatformat:"-2" }} ₽</strong>
           {% else %}
-            Вода «Горная» • 2 бутыли • 15 ноября, 10:00–14:00
+            Вы ещё не оформляли заказов. Перейдите в каталог для первого заказа со скидкой!
           {% endif %}
         </p>
       </div>

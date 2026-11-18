@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Интервалы доставки | Администрирование{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-page-container">
+  <header class="wire-page-header">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <h1 class="wire-page-title">Интервалы доставки</h1>
+        <p class="wire-page-subtitle">Временные слоты для оформления заказов и привязанные к ним районы</p>
+      </div>
+      <a href="{% url 'manage_interval_create' %}" class="wire-btn wire-btn-primary" style="text-decoration: none; padding: 10px 20px;">
+        + Добавить интервал
+      </a>
+    </div>
+  </header>
+
+  <div class="wire-category-tags" style="margin-bottom: 24px;">
+    <a href="{% url 'manage_settings' %}" class="wire-pill">Настройки системы</a>
+    <a href="{% url 'manage_users' %}" class="wire-pill">Пользователи и роли</a>
+    <a href="{% url 'manage_products' %}" class="wire-pill">Каталог товаров</a>
+    <a href="{% url 'manage_coolers' %}" class="wire-pill">Аренда кулеров</a>
+    <a href="{% url 'manage_intervals' %}" class="wire-pill active">Интервалы доставки</a>
+    <a href="{% url 'manage_districts' %}" class="wire-pill">Районы города</a>
+  </div>
+
+  {% if slots %}
+  <div class="wire-table-card">
+    <table class="wire-table">
+      <thead>
+        <tr>
+          <th>Слот времени</th>
+          <th>Время начала</th>
+          <th>Время окончания</th>
+          <th>Обслуживаемые районы</th>
+          <th style="text-align: right;">Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in slots %}
+        <tr>
+          <td>
+            <strong style="font-size: 15px; color: var(--color-navy);">{{ s }}</strong>
+          </td>
+          <td>{{ s.start|time:"H:i" }}</td>
+          <td>{{ s.end|time:"H:i" }}</td>
+          <td>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              {% for d in s.districts.all %}
+              <span class="wire-badge" style="background: #f1f5f9; color: #334155;">{{ d.name }}</span>
+              {% empty %}
+              <span style="color: #94a3b8; font-size: 13px;">Все районы не назначены</span>
+              {% endfor %}
+            </div>
+          </td>
+          <td style="text-align: right;">
+            <div style="display: flex; gap: 6px; justify-content: flex-end;">
+              <a href="{% url 'manage_interval_edit' s.pk %}" class="wire-btn wire-btn-secondary" style="font-size: 13px; padding: 6px 12px; text-decoration: none;">
+                Изменить
+              </a>
+              <a href="{% url 'manage_interval_delete' s.pk %}" class="wire-btn" style="font-size: 13px; padding: 6px 12px; text-decoration: none; color: #dc2626; background: #fee2e2; border-color: #fca5a5;">
+                Удалить
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="wire-empty-state">
+    <div class="wire-empty-icon">⏰</div>
+    <h3 class="wire-empty-title">Интервалы не настроены</h3>
+    <p class="wire-empty-text">Добавьте хотя бы один интервал для оформления заказов.</p>
+    <a href="{% url 'manage_interval_create' %}" class="wire-btn wire-btn-primary" style="text-decoration: none; margin-top: 16px;">
+      + Добавить интервал
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

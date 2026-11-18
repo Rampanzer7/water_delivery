@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} | Администрирование{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-page-container">
+  <div style="margin-bottom: 20px;">
+    <a href="{% url 'manage_districts' %}" class="wire-btn wire-btn-secondary" style="font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+      ← Назад к районам города
+    </a>
+  </div>
+
+  <header class="wire-page-header">
+    <h1 class="wire-page-title">{{ title }}</h1>
+    <p class="wire-page-subtitle">Укажите наименование района города для добавления в маршруты доставки</p>
+  </header>
+
+  <div class="wire-card" style="max-width: 500px; padding: 32px;">
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+      <div style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;">
+        {{ form.non_field_errors }}
+      </div>
+      {% endif %}
+
+      <div class="wire-form-group">
+        <label for="{{ form.name.id_for_label }}" class="wire-form-label">{{ form.name.label }}</label>
+        <input type="text" name="{{ form.name.name }}" id="{{ form.name.id_for_label }}"
+               value="{{ form.name.value|default:'' }}" class="wire-form-input" placeholder="Например: Центральный район">
+        {% if form.name.errors %}<p class="wire-form-error">{{ form.name.errors.0 }}</p>{% endif %}
+      </div>
+
+      <div style="margin-top: 32px; display: flex; gap: 12px;">
+        <button type="submit" class="wire-btn wire-btn-primary" style="padding: 12px 28px;">
+          Сохранить район
+        </button>
+        <a href="{% url 'manage_districts' %}" class="wire-btn wire-btn-secondary" style="padding: 12px 20px; text-decoration: none;">
+          Отмена
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} | Администрирование{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-page-container">
+  <div style="margin-bottom: 20px;">
+    <a href="{% url 'manage_coolers' %}" class="wire-btn wire-btn-secondary" style="font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+      ← Назад к парку кулеров
+    </a>
+  </div>
+
+  <header class="wire-page-header">
+    <h1 class="wire-page-title">{{ title }}</h1>
+    <p class="wire-page-subtitle">Укажите параметры кулера, тариф аренды в месяц, залоговую стоимость и загрузите фото</p>
+  </header>
+
+  <div class="wire-card" style="max-width: 680px; padding: 32px;">
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+      <div style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;">
+        {{ form.non_field_errors }}
+      </div>
+      {% endif %}
+
+      <div class="wire-form-group">
+        <label for="{{ form.name.id_for_label }}" class="wire-form-label">{{ form.name.label }}</label>
+        <input type="text" name="{{ form.name.name }}" id="{{ form.name.id_for_label }}"
+               value="{{ form.name.value|default:'' }}" class="wire-form-input" placeholder="Например: Aqua Classic">
+        {% if form.name.errors %}<p class="wire-form-error">{{ form.name.errors.0 }}</p>{% endif %}
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+        <div class="wire-form-group">
+          <label for="{{ form.monthly_price.id_for_label }}" class="wire-form-label">{{ form.monthly_price.label }} (₽/мес)</label>
+          <input type="number" step="0.01" name="{{ form.monthly_price.name }}" id="{{ form.monthly_price.id_for_label }}"
+                 value="{{ form.monthly_price.value|default:'' }}" class="wire-form-input" placeholder="450.00">
+          {% if form.monthly_price.errors %}<p class="wire-form-error">{{ form.monthly_price.errors.0 }}</p>{% endif %}
+        </div>
+
+        <div class="wire-form-group">
+          <label for="{{ form.deposit.id_for_label }}" class="wire-form-label">{{ form.deposit.label }} (₽)</label>
+          <input type="number" step="0.01" name="{{ form.deposit.name }}" id="{{ form.deposit.id_for_label }}"
+                 value="{{ form.deposit.value|default:'' }}" class="wire-form-input" placeholder="2500.00">
+          {% if form.deposit.errors %}<p class="wire-form-error">{{ form.deposit.errors.0 }}</p>{% endif %}
+        </div>
+
+        <div class="wire-form-group">
+          <label for="{{ form.quantity.id_for_label }}" class="wire-form-label">{{ form.quantity.label }} (шт.)</label>
+          <input type="number" name="{{ form.quantity.name }}" id="{{ form.quantity.id_for_label }}"
+                 value="{{ form.quantity.value|default:5 }}" class="wire-form-input" placeholder="5">
+          {% if form.quantity.errors %}<p class="wire-form-error">{{ form.quantity.errors.0 }}</p>{% endif %}
+        </div>
+      </div>
+
+      <div class="wire-form-group">
+        <label for="{{ form.description.id_for_label }}" class="wire-form-label">{{ form.description.label }}</label>
+        <textarea name="{{ form.description.name }}" id="{{ form.description.id_for_label }}"
+                  rows="4" class="wire-form-input" style="height: auto; padding: 10px 14px;"
+                  placeholder="Технические характеристики, тип охлаждения, нагрев, габариты...">{{ form.description.value|default:'' }}</textarea>
+        {% if form.description.errors %}<p class="wire-form-error">{{ form.description.errors.0 }}</p>{% endif %}
+      </div>
+
+      <div class="wire-form-group">
+        <label for="{{ form.photo.id_for_label }}" class="wire-form-label">
+          Фотография кулера (JPEG / PNG, до 2 МБ)
+        </label>
+        {% if cooler.photo %}
+        <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 12px;">
+          <img src="{{ cooler.photo.url }}" alt="Текущее фото" style="width: 80px; height: 80px; object-fit: contain; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <span style="font-size: 13px; color: var(--color-slate);">Текущее изображение</span>
+        </div>
+        {% endif %}
+        <input type="file" name="{{ form.photo.name }}" id="{{ form.photo.id_for_label }}"
+               accept="image/jpeg,image/png,image/webp" class="wire-form-input" style="padding: 8px;">
+        {% if form.photo.errors %}<p class="wire-form-error">{{ form.photo.errors.0 }}</p>{% endif %}
+      </div>
+
+      <div style="margin-top: 32px; display: flex; gap: 12px;">
+        <button type="submit" class="wire-btn wire-btn-primary" style="padding: 12px 28px;">
+          Сохранить кулер
+        </button>
+        <a href="{% url 'manage_coolers' %}" class="wire-btn wire-btn-secondary" style="padding: 12px 20px; text-decoration: none;">
+          Отмена
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Районы города | Администрирование{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-page-container">
+  <header class="wire-page-header">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <h1 class="wire-page-title">Районы обслуживания</h1>
+        <p class="wire-page-subtitle">Городские районы доставки и статистика активности заказов</p>
+      </div>
+      <a href="{% url 'manage_district_create' %}" class="wire-btn wire-btn-primary" style="text-decoration: none; padding: 10px 20px;">
+        + Добавить район
+      </a>
+    </div>
+  </header>
+
+  <div class="wire-category-tags" style="margin-bottom: 24px;">
+    <a href="{% url 'manage_settings' %}" class="wire-pill">Настройки системы</a>
+    <a href="{% url 'manage_users' %}" class="wire-pill">Пользователи и роли</a>
+    <a href="{% url 'manage_products' %}" class="wire-pill">Каталог товаров</a>
+    <a href="{% url 'manage_coolers' %}" class="wire-pill">Аренда кулеров</a>
+    <a href="{% url 'manage_intervals' %}" class="wire-pill">Интервалы доставки</a>
+    <a href="{% url 'manage_districts' %}" class="wire-pill active">Районы города</a>
+  </div>
+
+  {% if districts %}
+  <div class="wire-table-card">
+    <table class="wire-table">
+      <thead>
+        <tr>
+          <th>№</th>
+          <th>Название района</th>
+          <th>Количество заказов</th>
+          <th style="text-align: right;">Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in districts %}
+        <tr>
+          <td style="color: var(--color-slate); width: 60px;">{{ forloop.counter }}</td>
+          <td>
+            <strong style="font-size: 15px; color: var(--color-navy);">{{ d.name }}</strong>
+          </td>
+          <td>
+            <span class="wire-badge" style="background: #f1f5f9; color: #334155;">{{ d.orders_count }} заказов</span>
+          </td>
+          <td style="text-align: right;">
+            <div style="display: flex; gap: 6px; justify-content: flex-end;">
+              <a href="{% url 'manage_district_edit' d.pk %}" class="wire-btn wire-btn-secondary" style="font-size: 13px; padding: 6px 12px; text-decoration: none;">
+                Изменить
+              </a>
+              <a href="{% url 'manage_district_delete' d.pk %}" class="wire-btn" style="font-size: 13px; padding: 6px 12px; text-decoration: none; color: #dc2626; background: #fee2e2; border-color: #fca5a5;">
+                Удалить
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="wire-empty-state">
+    <div class="wire-empty-icon">📍</div>
+    <h3 class="wire-empty-title">Районы не добавлены</h3>
+    <p class="wire-empty-text">Добавьте районы города для оформления доставок клиентам.</p>
+    <a href="{% url 'manage_district_create' %}" class="wire-btn wire-btn-primary" style="text-decoration: none; margin-top: 16px;">
+      + Добавить район
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
