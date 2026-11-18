@@ -5,19 +5,21 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Святой Источник — чистая вода и аренда кулеров{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 
 <body>
   <header class="wire-header">
     <div class="wire-container wire-header-row">
-      <a class="wire-brand" href="{% url 'catalog' %}">Святой Источник</a>
+      <a class="wire-brand" href="{% url 'home' %}">Святой Источник</a>
 
       <nav class="wire-nav-center desktop-nav" aria-label="Основная навигация">
-        <a class="wire-nav-link" href="{% url 'catalog' %}#popular-water">Вода и кулеры</a>
-        <a class="wire-nav-link" href="{% url 'catalog' %}#delivery">Доставка и оплата</a>
-        <a class="wire-nav-link" href="{% url 'catalog' %}#contacts">Контакты</a>
+        <a class="wire-nav-link" href="{% url 'catalog' %}">Вода и кулеры</a>
+        <a class="wire-nav-link" href="#contacts">Доставка и оплата</a>
+        <a class="wire-nav-link" href="#contacts">Контакты</a>
       </nav>
 
       <div class="wire-header-right desktop-nav">
@@ -37,9 +39,9 @@
     </div>
 
     <nav id="mobileNav" class="mobile-menu" aria-label="Мобильное меню">
-      <a class="wire-nav-link" href="{% url 'catalog' %}#popular-water">Вода и кулеры</a>
-      <a class="wire-nav-link" href="{% url 'catalog' %}#delivery">Доставка и оплата</a>
-      <a class="wire-nav-link" href="{% url 'catalog' %}#contacts">Контакты</a>
+      <a class="wire-nav-link" href="{% url 'catalog' %}">Вода и кулеры</a>
+      <a class="wire-nav-link" href="#contacts">Доставка и оплата</a>
+      <a class="wire-nav-link" href="#contacts">Контакты</a>
       {% if user.is_authenticated %}
       <a class="wire-nav-link" href="{% url 'profile' %}">Кабинет ({{ user.username }})</a>
       <a class="wire-nav-link" href="{% url 'my_orders' %}">Мои заказы</a>
@@ -68,7 +70,7 @@
   <footer id="contacts" class="wire-footer">
     <div class="wire-container">
       <div class="wire-footer-line wire-footer-title">Святой Источник - Вода, доставка, аренда кулеров</div>
-      <div class="wire-footer-line wire-footer-sub">Поддержка: ежедневно 08:00–20:00 | <a href="{% url 'catalog' %}#delivery" class="footer-link">Условия и контакты</a></div>
+      <div class="wire-footer-line wire-footer-sub">Поддержка: ежедневно 08:00–20:00 | <a href="#contacts" class="footer-link">Условия и контакты</a></div>
       <div class="wire-footer-line wire-footer-copy">©2026 Политика конфиденциальности</div>
     </div>
   </footer>

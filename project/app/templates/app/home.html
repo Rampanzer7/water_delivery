@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Чистая вода — прямо к вашей двери | Святой Источник{% endblock %}
+
+{% block content %}
+<section class="wire-hero-section" aria-labelledby="hero-title">
+  <div class="wire-container wire-hero-grid">
+    <div class="wire-hero-content">
+      <div class="wire-hero-label">ДОСТАВКА ПИТЬЕВОЙ ВОДЫ<span class="desktop-inline"> И АРЕНДА КУЛЕРОВ</span></div>
+      <h1 id="hero-title" class="wire-hero-title">Чистая вода —<br>прямо к <span class="desktop-inline">вашей </span>двери</h1>
+      <p class="wire-hero-desc desktop-only">Вода 19 литров, удобные интервалы доставки и аренда<br>кулеров для дома и офиса.</p>
+      <p class="wire-hero-desc mobile-only">Заказывайте воду 19 л и арендуйте кулер с<br>удобной доставкой.</p>
+      <div class="wire-hero-actions">
+        <a class="wire-btn" href="{% url 'catalog' %}">Выбрать воду</a>
+        <a class="wire-btn desktop-only" href="{% url 'coolers' %}">Арендовать кулер</a>
+        <a class="wire-btn mobile-only" href="{% url 'catalog' %}">Доставка по графику</a>
+      </div>
+    </div>
+
+    <div class="wire-hero-box desktop-only" aria-hidden="true">
+      <div class="wire-hero-showcase">
+        <img src="{% static 'images/bottle.jpeg' %}" alt="Питьевая вода 19 л" class="hero-showcase-bottle" width="130" height="210">
+        <img src="{% static 'images/cooler.jpeg' %}" alt="Напольный кулер" class="hero-showcase-cooler" width="130" height="210">
+        <div class="hero-showcase-badge">
+          <span class="hero-badge-accent">Быстрая доставка</span>
+          <span class="hero-badge-text">в день заказа</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="popular-water" class="wire-section" aria-labelledby="heading-popular">
+  <div class="wire-container">
+    <h2 id="heading-popular" class="wire-section-title">Популярные товары</h2>
+    <p class="wire-section-subtitle desktop-only">Вода для дома и офиса — с доставкой по удобному графику</p>
+    <p class="wire-section-subtitle mobile-only">Вода для дома и офиса</p>
+
+    <div class="wire-cards-grid">
+      {% for product in popular_waters %}
+      <article class="wire-card {% if forloop.first %}card-svetlaya{% elif forloop.counter == 2 %}card-gornaya{% endif %}">
+        <div class="wire-card-img-box">
+          <span class="wire-card-badge">{% if forloop.first %}хит{% else %}Новинка{% endif %}</span>
+          <img src="{% static 'images/bottle.jpeg' %}" alt="Питьевая вода {{ product.name }}" width="100" height="100" loading="lazy" class="wire-card-center-img">
+        </div>
+        <div class="wire-card-body">
+          <h3 class="wire-card-title"><a href="{% url 'product_detail' product.pk %}">{{ product.name }}</a></h3>
+          <div class="wire-card-sub">{% if product.volume %}{{ product.volume|floatformat:"-1" }} л{% else %}19 л{% endif %}</div>
+        </div>
+        <div class="wire-card-action">
+          <div class="wire-card-price">от {{ product.price|floatformat:"-2" }} ₽</div>
+          <form method="post" action="{% url 'cart_add' product.pk %}" class="wire-card-form">
+            {% csrf_token %}
+            <input type="hidden" name="quantity" value="1">
+            <button type="submit" class="wire-card-btn">Купить</button>
+          </form>
+        </div>
+      </article>
+      {% empty %}
+      <article class="wire-card card-svetlaya">
+        <div class="wire-card-img-box">
+          <span class="wire-card-badge"><span class="desktop-inline">хит</span><span class="mobile-inline">Новинка</span></span>
+          <img src="{% static 'images/bottle.jpeg' %}" alt="Вода Светлая" width="100" height="100" loading="lazy" class="wire-card-center-img">
+        </div>
+        <div class="wire-card-body">
+          <h3 class="wire-card-title">Вода «Светлая»</h3>
+          <div class="wire-card-sub">19 л</div>
+        </div>
+        <div class="wire-card-action">
+          <div class="wire-card-price">от 390 ₽</div>
+          <a class="wire-card-btn" href="{% url 'catalog' %}">Купить</a>
+        </div>
+      </article>
+      <article class="wire-card card-gornaya">
+        <div class="wire-card-img-box">
+          <span class="wire-card-badge"><span class="desktop-inline">Новинка</span><span class="mobile-inline">хит</span></span>
+          <img src="{% static 'images/bottle.jpeg' %}" alt="Вода Горная" width="100" height="100" loading="lazy" class="wire-card-center-img">
+        </div>
+        <div class="wire-card-body">
+          <h3 class="wire-card-title">Вода «Горная»</h3>
+          <div class="wire-card-sub">19 л</div>
+        </div>
+        <div class="wire-card-action">
+          <div class="wire-card-price">от 390 ₽</div>
+          <a class="wire-card-btn" href="{% url 'catalog' %}">Купить</a>
+        </div>
+      </article>
+      <article class="wire-card desktop-only">
+        <div class="wire-card-img-box">
+          <span class="wire-card-badge">хит</span>
+          <img src="{% static 'images/bottle.jpeg' %}" alt="Вода Свежая" width="100" height="100" loading="lazy" class="wire-card-center-img">
+        </div>
+        <div class="wire-card-body">
+          <h3 class="wire-card-title">Вода «Свежая»</h3>
+          <div class="wire-card-sub">19 л</div>
+        </div>
+        <div class="wire-card-action">
+          <div class="wire-card-price">от 390 ₽</div>
+          <a class="wire-card-btn" href="{% url 'catalog' %}">Купить</a>
+        </div>
+      </article>
+      {% endfor %}
+
+      <article class="wire-card wire-promo-card card-promo">
+        <div class="wire-promo-top">
+          <h3 class="wire-promo-title">Больше товаров</h3>
+          <p class="wire-promo-desc">по выгодным ценам</p>
+        </div>
+        <a class="wire-card-btn" href="{% url 'catalog' %}">перейти в каталог</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="coolers" class="wire-section wire-section-coolers" aria-labelledby="heading-coolers">
+  <div class="wire-container">
+    <div class="wire-section-label">ВЫБИРАЙТЕ</div>
+    <h2 id="heading-coolers" class="wire-section-title">Если нужна аренда куллера</h2>
+    <p class="wire-section-subtitle">Вода для дома и офиса — с доставкой по удобному графику</p>
+
+    <div class="wire-cards-grid">
+      {% for cooler in coolers %}
+      <article class="wire-card {% if forloop.last %}desktop-only{% endif %}">
+        <div class="wire-card-img-box">
+          <span class="wire-card-badge">{% if forloop.first %}хит{% else %}Новинка{% endif %}</span>
+          <img src="{% static 'images/cooler.jpeg' %}" alt="Кулер {{ cooler.name }}" width="90" height="90" loading="lazy" class="wire-card-center-img">
+        </div>
+        <div class="wire-card-body">
+          <h3 class="wire-card-title">{{ cooler.name }}</h3>
+          <div class="wire-card-sub">Аренда</div>
+        </div>
+        <div class="wire-card-action">
+          <div class="wire-card-price">от {{ cooler.monthly_price|floatformat:"-2" }} ₽/мес</div>
+          <a class="wire-card-btn" href="{% url 'rent_cooler' cooler.pk %}">Арендовать</a>
+        </div>
+      </article>
+      {% empty %}
+      <article class="wire-card">
+        <div class="wire-card-img-box">
+          <span class="wire-card-badge">хит</span>
+          <img src="{% static 'images/cooler.jpeg' %}" alt="Кулер" width="90" height="90" loading="lazy" class="wire-card-center-img">
+        </div>
+        <div class="wire-card-body">
+          <h3 class="wire-card-title">Кулер напольный</h3>
+          <div class="wire-card-sub">Аренда</div>
+        </div>
+        <div class="wire-card-action">
+          <div class="wire-card-price">от 900 ₽/мес</div>
+          <a class="wire-card-btn" href="{% url 'coolers' %}">Арендовать</a>
+        </div>
+      </article>
+      <article class="wire-card">
+        <div class="wire-card-img-box">
+          <span class="wire-card-badge">Новинка</span>
+          <img src="{% static 'images/cooler.jpeg' %}" alt="Кулер" width="90" height="90" loading="lazy" class="wire-card-center-img">
+        </div>
+        <div class="wire-card-body">
+          <h3 class="wire-card-title">Кулер настольный</h3>
+          <div class="wire-card-sub">Аренда</div>
+        </div>
+        <div class="wire-card-action">
+          <div class="wire-card-price">от 600 ₽/мес</div>
+          <a class="wire-card-btn" href="{% url 'coolers' %}">Арендовать</a>
+        </div>
+      </article>
+      <article class="wire-card desktop-only">
+        <div class="wire-card-img-box">
+          <span class="wire-card-badge">хит</span>
+          <img src="{% static 'images/cooler.jpeg' %}" alt="Кулер" width="90" height="90" loading="lazy" class="wire-card-center-img">
+        </div>
+        <div class="wire-card-body">
+          <h3 class="wire-card-title">Кулер с охлаждением</h3>
+          <div class="wire-card-sub">Аренда</div>
+        </div>
+        <div class="wire-card-action">
+          <div class="wire-card-price">от 450 ₽/мес</div>
+          <a class="wire-card-btn" href="{% url 'coolers' %}">Арендовать</a>
+        </div>
+      </article>
+      {% endfor %}
+
+      <article class="wire-card wire-promo-card card-promo">
+        <div class="wire-promo-top">
+          <h3 class="wire-promo-title">Больше товаров</h3>
+          <p class="wire-promo-desc">по выгодным ценам</p>
+        </div>
+        <a class="wire-card-btn" href="{% url 'coolers' %}">перейти в каталог</a>
+      </article>
+    </div>
+  </div>
+</section>
+{% endblock %}

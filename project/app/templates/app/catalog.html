@@ -1,217 +1,152 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Чистая вода — прямо к вашей двери | Святой Источник{% endblock %}
+{% block title %}{% if kind == 'water' %}Каталог воды 19 литров{% elif kind == 'cooler' %}Каталог кулеров{% else %}Каталог товаров{% endif %} | Святой Источник{% endblock %}
 
 {% block content %}
-<section class="wire-hero-section" aria-labelledby="hero-title">
-  <div class="wire-container wire-hero-grid">
-    <div class="wire-hero-content">
-      <div class="wire-hero-label">ДОСТАВКА ПИТЬЕВОЙ ВОДЫ<span class="desktop-inline"> И АРЕНДА КУЛЕРОВ</span></div>
-      <h1 id="hero-title" class="wire-hero-title">Чистая вода —<br>прямо к <span class="desktop-inline">вашей </span>двери</h1>
-      <p class="wire-hero-desc desktop-only">Вода 19 литров, удобные интервалы доставки и аренда<br>кулеров для дома и офиса.</p>
-      <p class="wire-hero-desc mobile-only">Заказывайте воду 19 л и арендуйте кулер с<br>удобной доставкой.</p>
-      <div class="wire-hero-actions">
-        <a class="wire-btn" href="{% url 'catalog' %}#popular-water">Выбрать воду</a>
-        <a class="wire-btn desktop-only" href="{% url 'coolers' %}">Арендовать кулер</a>
-        <a class="wire-btn mobile-only" href="{% url 'catalog' %}#popular-water">Доставка по графику</a>
-      </div>
-    </div>
+<div class="wire-container wire-page-container">
+  <header class="wire-page-header">
+    <div class="wire-section-label">КАТАЛОГ</div>
+    {% if kind == 'water' %}
+    <h1 class="wire-page-title">Вода 19 литров</h1>
+    <p class="wire-page-subtitle">Чистая питьевая вода для дома и офиса с быстрой доставкой</p>
+    {% elif kind == 'cooler' %}
+    <h1 class="wire-page-title">Кулеры для воды</h1>
+    <p class="wire-page-subtitle">Напольные и настольные кулеры для комфортного розлива воды</p>
+    {% else %}
+    <h1 class="wire-page-title">Каталог товаров</h1>
+    <p class="wire-page-subtitle">Чистая вода 19 литров и современные кулеры с доставкой до двери</p>
+    {% endif %}
+  </header>
 
-    <div class="wire-hero-box desktop-only" aria-hidden="true"></div>
-  </div>
-</section>
+  <div class="wire-catalog-layout">
+        <aside class="wire-sidebar desktop-only" aria-label="Фильтры каталога">
+      <div class="wire-sidebar-box">
+        <h3 class="wire-sidebar-title">Фильтры</h3>
+        <form method="get" action="{% url 'catalog' %}" class="wire-filter-form">
+          {% if query %}
+          <input type="hidden" name="q" value="{{ query }}">
+          {% endif %}
 
-<section id="popular-water" class="wire-section" aria-labelledby="heading-popular">
-  <div class="wire-container">
-    <h2 id="heading-popular" class="wire-section-title">Популярные товары</h2>
-    <p class="wire-section-subtitle desktop-only">Вода для дома и офиса — с доставкой по удобному графику</p>
-    <p class="wire-section-subtitle mobile-only">Вода для дома и офиса</p>
-
-    <div class="wire-cards-grid">
-      <article class="wire-card card-svetlaya">
-        <div class="wire-card-img-box">
-          <span class="wire-card-badge"><span class="desktop-inline">хит</span><span class="mobile-inline">Новинка</span></span>
-        </div>
-        <h3 class="wire-card-title">Вода «Светлая»</h3>
-        <div class="wire-card-sub">19 л</div>
-        <div class="wire-card-price">от 390 ₽</div>
-        <form method="post" action="{% url 'cart_add' 13 %}">
-          {% csrf_token %}
-          <input type="hidden" name="quantity" value="1">
-          <button type="submit" class="wire-card-btn">Купить</button>
-        </form>
-      </article>
-
-      <article class="wire-card card-gornaya">
-        <div class="wire-card-img-box">
-          <span class="wire-card-badge"><span class="desktop-inline">Новинка</span><span class="mobile-inline">хит</span></span>
-        </div>
-        <h3 class="wire-card-title">Вода «Горная»</h3>
-        <div class="wire-card-sub">19 л</div>
-        <div class="wire-card-price">от 390 ₽</div>
-        <form method="post" action="{% url 'cart_add' 7 %}">
-          {% csrf_token %}
-          <input type="hidden" name="quantity" value="1">
-          <button type="submit" class="wire-card-btn">Купить</button>
-        </form>
-      </article>
-
-      <article class="wire-card desktop-only">
-        <div class="wire-card-img-box">
-          <span class="wire-card-badge">хит</span>
-        </div>
-        <h3 class="wire-card-title">Вода «Свежая»</h3>
-        <div class="wire-card-sub">19 л</div>
-        <div class="wire-card-price">от 390 ₽</div>
-        <form method="post" action="{% url 'cart_add' 10 %}">
-          {% csrf_token %}
-          <input type="hidden" name="quantity" value="1">
-          <button type="submit" class="wire-card-btn">Купить</button>
-        </form>
-      </article>
-
-      <article class="wire-card wire-promo-card card-promo">
-        <div class="wire-promo-top">
-          <h3 class="wire-promo-title">Больше товаров</h3>
-          <p class="wire-promo-desc">по выгодным ценам</p>
-        </div>
-        <a class="wire-card-btn" href="{% url 'catalog' %}?all=1#catalog-list">перейти в каталог</a>
-      </article>
-    </div>
-  </div>
-</section>
-
-<section id="coolers" class="wire-section wire-section-coolers" aria-labelledby="heading-coolers">
-  <div class="wire-container">
-    <div class="wire-section-label">ВЫБИРАЙТЕ</div>
-    <h2 id="heading-coolers" class="wire-section-title">Если нужна аренда куллера</h2>
-    <p class="wire-section-subtitle">Вода для дома и офиса — с доставкой по удобному графику</p>
-
-    <div class="wire-cards-grid">
-      <article class="wire-card">
-        <div class="wire-card-img-box">
-          <span class="wire-card-badge">хит</span>
-        </div>
-        <h3 class="wire-card-title">Кулер</h3>
-        <div class="wire-card-sub">50 л</div>
-        <div class="wire-card-price">от 900 ₽</div>
-        <a class="wire-card-btn" href="{% url 'coolers' %}">Купить</a>
-      </article>
-
-      <article class="wire-card">
-        <div class="wire-card-img-box">
-          <span class="wire-card-badge">Новинка</span>
-        </div>
-        <h3 class="wire-card-title">Кулер</h3>
-        <div class="wire-card-sub">45 л</div>
-        <div class="wire-card-price">от 600 ₽</div>
-        <a class="wire-card-btn" href="{% url 'coolers' %}">Купить</a>
-      </article>
-
-      <article class="wire-card desktop-only">
-        <div class="wire-card-img-box">
-          <span class="wire-card-badge">хит</span>
-        </div>
-        <h3 class="wire-card-title">Кулер</h3>
-        <div class="wire-card-sub">30 л</div>
-        <div class="wire-card-price">от 450 ₽</div>
-        <a class="wire-card-btn" href="{% url 'coolers' %}">Купить</a>
-      </article>
-
-      <article class="wire-card wire-promo-card card-promo">
-        <div class="wire-promo-top">
-          <h3 class="wire-promo-title">Больше товаров</h3>
-          <p class="wire-promo-desc">по выгодным ценам</p>
-        </div>
-        <a class="wire-card-btn" href="{% url 'coolers' %}">перейти в каталог</a>
-      </article>
-    </div>
-  </div>
-</section>
-
-{% if request.GET.all or request.GET.q or request.GET.kind or request.GET.price_min or request.GET.price_max or request.GET.available %}
-<section id="catalog-list" class="wire-section catalog-full-section" aria-labelledby="heading-all-catalog">
-  <div class="wire-container">
-    <h2 id="heading-all-catalog" class="wire-section-title">Каталог товаров</h2>
-    <p class="wire-section-subtitle">Выберите воду или сопутствующее оборудование</p>
-
-    <div class="catalog-layout">
-      <aside class="catalog-sidebar" aria-label="Фильтры каталога">
-        <form class="filters card" method="get" action="{% url 'catalog' %}#catalog-list">
-          <input type="hidden" name="all" value="1">
-          <h3>Фильтры</h3>
-          <div class="filter-group">
-            <label for="q">Поиск</label>
-            <input id="q" type="search" name="q" value="{{ query }}" placeholder="Название или описание">
-          </div>
-          <div class="filter-group">
-            <label for="kind">Тип товара</label>
-            <select id="kind" name="kind">
-              <option value="">Все категории</option>
+          <div class="wire-filter-group">
+            <label for="filter-kind" class="wire-filter-label">Категория</label>
+            <select id="filter-kind" name="kind" class="wire-filter-select">
+              <option value="" {% if not kind %}selected{% endif %}>Все категории</option>
               <option value="water" {% if kind == 'water' %}selected{% endif %}>Вода</option>
-              <option value="pump" {% if kind == 'pump' %}selected{% endif %}>Помпы</option>
+              <option value="cooler" {% if kind == 'cooler' %}selected{% endif %}>Кулеры</option>
             </select>
           </div>
-          <div class="filter-group">
-            <label for="price_min">Цена от, ₽</label>
-            <input id="price_min" type="number" name="price_min" value="{{ price_min|default:'' }}" min="0" step="10">
+
+          {% if kind != 'cooler' %}
+          <div class="wire-filter-group">
+            <label for="filter-volume" class="wire-filter-label">Объём</label>
+            <select id="filter-volume" name="volume" class="wire-filter-select">
+              <option value="">Все объёмы</option>
+              <option value="19" {% if volume == '19' or not volume %}selected{% endif %}>19 л</option>
+            </select>
           </div>
-          <div class="filter-group">
-            <label for="price_max">Цена до, ₽</label>
-            <input id="price_max" type="number" name="price_max" value="{{ price_max|default:'' }}" min="0" step="10">
+          {% endif %}
+
+          <div class="wire-filter-group">
+            <label for="filter-sort" class="wire-filter-label">Сортировка</label>
+            <select id="filter-sort" name="sort" class="wire-filter-select">
+              <option value="popular" {% if sort == 'popular' %}selected{% endif %}>Сначала популярные</option>
+              <option value="price" {% if sort == 'price' %}selected{% endif %}>Сначала дешевле</option>
+              <option value="-price" {% if sort == '-price' %}selected{% endif %}>Сначала дороже</option>
+              <option value="name" {% if sort == 'name' %}selected{% endif %}>По названию (А–Я)</option>
+            </select>
           </div>
-          <div class="filter-group checkbox-group">
-            <label><input type="checkbox" name="available" value="1" {% if only_available %}checked{% endif %}> Только в наличии</label>
+
+          <div class="wire-filter-group wire-checkbox-group">
+            <label class="wire-checkbox-label">
+              <input type="checkbox" name="available" value="1" {% if only_available %}checked{% endif %}>
+              Только в наличии
+            </label>
           </div>
-          <div class="filter-actions">
-            <button class="button" type="submit">Применить</button>
-            <a class="button button-outline" href="{% url 'catalog' %}">Сбросить</a>
+
+          <div class="wire-sidebar-actions">
+            <button type="submit" class="wire-link-action">применить</button>
+            <a href="{% url 'catalog' %}" class="wire-link-action">сбросить</a>
           </div>
         </form>
-      </aside>
+      </div>
+    </aside>
 
-      <div class="catalog-content">
-        <div class="cards">
-          {% for product in page.object_list %}
-          <article class="card">
-            <div class="card-image-wrap">
-              {% if product.kind == 'water' %}
-              <img class="card-image" src="{% static 'images/water-bottle.svg' %}" alt="Питьевая вода {{ product.name }}" width="110" height="110">
-              {% else %}
-              <img class="card-image" src="{% static 'images/pump.svg' %}" alt="Помпа для воды {{ product.name }}" width="110" height="110">
-              {% endif %}
-            </div>
-            <h3>{{ product.name }}</h3>
-            <p class="muted">{% if product.kind == 'water' %}Вода, {{ product.volume|floatformat:"-1" }} л{% else %}Аксессуар{% endif %}</p>
-            <p class="price">{{ product.price|floatformat:"-2" }} ₽</p>
-            {% if product.deposit_price %}
-            <p class="muted">Залог за тару: {{ product.deposit_price|floatformat:"-2" }} ₽</p>
+        <div class="wire-catalog-main">
+            <form method="get" action="{% url 'catalog' %}" class="wire-search-box">
+        {% if kind %}<input type="hidden" name="kind" value="{{ kind }}">{% endif %}
+        {% if volume %}<input type="hidden" name="volume" value="{{ volume }}">{% endif %}
+        <svg class="wire-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="search" name="q" value="{{ query }}" placeholder="Поиск: название товара" aria-label="Поиск по названию" class="wire-search-input">
+        {% if query %}
+        <a href="{% url 'catalog' %}{% if kind %}?kind={{ kind }}{% endif %}" class="wire-search-clear-btn" aria-label="Очистить поиск">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </a>
+        {% else %}
+        <button type="submit" class="wire-search-clear-btn desktop-only" aria-label="Искать">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+        {% endif %}
+      </form>
+
+      <div class="wire-category-tags" aria-label="Категории товаров">
+        <a href="{% url 'catalog' %}{% if query %}?q={{ query }}{% endif %}" class="wire-pill {% if not kind %}active{% endif %}">Все товары</a>
+        <a href="{% url 'catalog' %}?kind=water{% if query %}&q={{ query }}{% endif %}" class="wire-pill {% if kind == 'water' %}active{% endif %}">Вода</a>
+        <a href="{% url 'catalog' %}?kind=cooler{% if query %}&q={{ query }}{% endif %}" class="wire-pill {% if kind == 'cooler' %}active{% endif %}">Кулеры</a>
+      </div>
+
+      <div class="wire-catalog-grid">
+        {% for product in page.object_list %}
+        <article class="wire-card wire-catalog-card {% if product.stock <= 0 %}card-disabled{% endif %}">
+          <div class="wire-card-img-box">
+            <span class="wire-card-badge">{% if forloop.counter|divisibleby:2 %}Новинка{% else %}хит{% endif %}</span>
+            {% if product.kind == 'cooler' or 'кулер' in product.name|lower %}
+            <img src="{% static 'images/cooler.jpeg' %}" alt="{{ product.name }}" width="180" height="180" loading="lazy" class="wire-card-center-img">
+            {% else %}
+            <img src="{% static 'images/bottle.jpeg' %}" alt="{{ product.name }}" width="180" height="180" loading="lazy" class="wire-card-center-img">
             {% endif %}
-            <form method="post" action="{% url 'cart_add' product.pk %}">
-              {% csrf_token %}
-              <div class="card-actions">
-                <input type="number" name="quantity" value="1" min="1" max="99" aria-label="Количество товара {{ product.name }}">
-                <button class="button button-sm" type="submit">В корзину</button>
-              </div>
-            </form>
-          </article>
-          {% empty %}
-          <div class="empty-state">
-            <p>Товары не найдены. Попробуйте изменить параметры поиска.</p>
-            <a class="button secondary" href="{% url 'catalog' %}">Показать все товары</a>
           </div>
-          {% endfor %}
+          <div class="wire-card-body">
+            <h2 class="wire-card-title"><a href="{% url 'product_detail' product.pk %}">{{ product.name }}</a></h2>
+            <div class="wire-card-sub">{% if product.kind == 'cooler' or 'кулер' in product.name|lower %}Кулер{% elif product.volume %}{{ product.volume|floatformat:"-1" }} л{% else %}19 л{% endif %}</div>
+          </div>
+          <div class="wire-card-action">
+            {% if product.stock > 0 %}
+            <div class="wire-card-price">{% if product.kind == 'cooler' or 'кулер' in product.name|lower %}от {{ product.price|floatformat:"-2" }} ₽/мес{% else %}от {{ product.price|floatformat:"-2" }} ₽{% endif %}</div>
+            <form method="post" action="{% url 'cart_add' product.pk %}" class="wire-card-form">
+              {% csrf_token %}
+              <input type="hidden" name="quantity" value="1">
+              <button type="submit" class="wire-card-btn">Купить</button>
+            </form>
+            {% else %}
+            <div class="wire-card-price wire-card-price-unavailable">Нет в наличии</div>
+            <button type="button" class="wire-card-btn" disabled>Купить</button>
+            {% endif %}
+          </div>
+        </article>
+        {% empty %}
+        <div class="wire-empty-state">
+          <p>По запросу «{{ query }}» товаров не найдено.</p>
+          <a class="wire-btn" href="{% url 'catalog' %}">Показать все товары</a>
         </div>
+        {% endfor %}
+      </div>
+
+            {% if page.has_other_pages %}
+      <div class="wire-pagination-wrap">
         {% include 'app/_pagination.html' %}
       </div>
+      {% endif %}
     </div>
   </div>
-</section>
-{% endif %}
-
-<section id="delivery" class="wire-container delivery-info-section sr-only" aria-label="Доставка и оплата">
-  <h2>Условия доставки и оплаты</h2>
-  <p>Доставка питьевой воды 19 л осуществляется ежедневно с 08:00 до 20:00 с бесплатным подъёмом на этаж.</p>
-</section>
+</div>
 {% endblock %}

@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Оформление заказа | Святой Источник{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-page-container">
+  <nav class="wire-breadcrumbs" aria-label="Хлебные крошки">
+    <a href="{% url 'cart' %}">КОРЗИНА</a> / <span>ОФОРМЛЕНИЕ</span>
+  </nav>
+
+  <header class="wire-page-header">
+    <h1 class="wire-page-title">Оформление заказа</h1>
+    <p class="wire-page-subtitle">Укажите адрес, дату и интервал доставки</p>
+  </header>
+
+  <div class="wire-checkout-layout">
+        <div class="wire-checkout-form-col">
+      <div class="wire-checkout-box wire-box-shaded">
+        <h2 class="wire-checkout-box-title desktop-only">Данные доставки</h2>
+
+        <form id="order-form" method="post" action="{% url 'checkout' %}"
+              data-slots-url="{% url 'api_slots' %}" data-calc-url="{% url 'api_calc' %}"
+              {% if order %}data-order="{{ order.pk }}"{% endif %}>
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+
+                    <div class="wire-form-row">
+            <label for="id_address" class="wire-form-label">Адрес доставки</label>
+            <div class="wire-form-field">
+              <select id="id_address" name="address" class="wire-select-control" required>
+                <option value="">Выберите сохранённый адрес</option>
+                {% for addr in form.fields.address.queryset %}
+                <option value="{{ addr.pk }}" {% if form.address.value|stringformat:"s" == addr.pk|stringformat:"s" or forloop.first and not form.address.value %}selected{% endif %}>
+                  ул. {{ addr.street }}, {{ addr.house }}{% if addr.flat %}, кв. {{ addr.flat }}{% endif %}
+                </option>
+                {% endfor %}
+              </select>
+              {{ form.address.errors }}
+            </div>
+          </div>
+
+                    <div class="wire-form-row">
+            <label for="id_delivery_date" class="wire-form-label">Дата доставки</label>
+            <div class="wire-form-field">
+              <input id="id_delivery_date" type="date" name="delivery_date"
+                     value="{{ form.delivery_date.value|date:'Y-m-d'|default:form.delivery_date.value|default:'' }}"
+                     class="wire-input-control" required>
+              {{ form.delivery_date.errors }}
+            </div>
+          </div>
+
+                    <div class="wire-form-row">
+            <label for="id_slot" class="wire-form-label">Интервал доставки</label>
+            <div class="wire-form-field">
+              <select id="id_slot" name="slot" class="wire-select-control" required>
+                <option value="">Выберите интервал</option>
+                {% for slot in form.fields.slot.queryset %}
+                <option value="{{ slot.pk }}" {% if form.slot.value|stringformat:"s" == slot.pk|stringformat:"s" %}selected{% endif %}>
+                  {{ slot.start|time:"H:i" }}–{{ slot.end|time:"H:i" }}
+                </option>
+                {% endfor %}
+              </select>
+              {{ form.slot.errors }}
+            </div>
+          </div>
+
+                    <div class="wire-form-row">
+            <label for="id_bottles_total" class="wire-form-label">Количество бутылей</label>
+            <div class="wire-form-field">
+              <input id="id_bottles_total" type="text" readonly
+                     value="{{ totals.bottles }}" class="wire-input-control wire-readonly" aria-label="Количество бутылей">
+            </div>
+          </div>
+
+                    <div class="wire-form-row">
+            <label for="id_returned_bottles" class="wire-form-label">Сдаёте пустые бутыли</label>
+            <div class="wire-form-field">
+              <input id="id_returned_bottles" type="number" name="returned_bottles"
+                     value="{{ form.returned_bottles.value|default:'0' }}" min="0"
+                     class="wire-input-control" aria-label="Сдаёте пустые бутыли">
+              {{ form.returned_bottles.errors }}
+            </div>
+          </div>
+
+          {% if form.comment %}
+          <div class="wire-form-row desktop-only">
+            <label for="id_comment" class="wire-form-label">Комментарий курьеру</label>
+            <div class="wire-form-field">
+              <input id="id_comment" type="text" name="comment" value="{{ form.comment.value|default:'' }}" class="wire-input-control">
+            </div>
+          </div>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+
+        <div class="wire-checkout-summary-col">
+            <div class="wire-checkout-box wire-summary-desktop desktop-only">
+        <h2 class="wire-checkout-box-title">Ваш заказ</h2>
+
+        <div class="wire-order-items-list">
+          {% for product, quantity, subtotal in lines %}
+          <div class="wire-order-item-line">
+            <span class="wire-item-name">{{ product.name }} × {{ quantity }}</span>
+            <span class="wire-item-price">{{ subtotal|floatformat:"-2" }} ₽</span>
+          </div>
+          {% empty %}
+          <div class="wire-order-item-line">
+            <span class="wire-item-name">Вода «Горная» 19 л × 2</span>
+            <span class="wire-item-price">780 ₽</span>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="wire-summary-row">
+          <span>Товары</span>
+          <span class="wire-summary-val"><span id="sum-goods">{{ totals.goods|floatformat:"-2" }}</span> ₽</span>
+        </div>
+
+        <div class="wire-summary-row">
+          <span>Залог за тару</span>
+          <span class="wire-summary-val"><span id="sum-deposit">{{ totals.deposit|floatformat:"-2" }}</span> ₽</span>
+        </div>
+
+        <hr class="wire-summary-hr">
+
+        <div class="wire-summary-row wire-total-row">
+          <strong>Итого</strong>
+          <strong class="wire-total-val"><span id="sum-total">{{ totals.total|floatformat:"-2" }}</span> ₽</strong>
+        </div>
+
+        <button form="order-form" type="submit" class="wire-btn wire-btn-block wire-submit-btn">Подтвердить заказ</button>
+      </div>
+
+            <div class="wire-checkout-box wire-summary-mobile mobile-only">
+        <div class="wire-mobile-summary-title">Итого к оплате</div>
+        <div class="wire-mobile-summary-price"><span id="sum-total-mobile">{{ totals.total|floatformat:"-2" }}</span> ₽</div>
+        <div class="wire-mobile-summary-sub">Товары + залог за тару</div>
+      </div>
+
+      <button form="order-form" type="submit" class="wire-btn wire-btn-block wire-submit-btn mobile-only">Подтвердить заказ</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/checkout.js' %}"></script>
+{% endblock %}

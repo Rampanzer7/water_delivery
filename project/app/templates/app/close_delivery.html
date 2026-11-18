@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Закрытие доставки № WD-{{ order.pk|stringformat:"03d" }} | Святой Источник{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-page-container">
+  <div class="wire-section-label">КУРЬЕР / МОИ ДОСТАВКИ</div>
+  <h1 class="wire-page-title">Закрытие доставки</h1>
+  <p class="wire-page-subtitle">Проверьте заказ и внесите фактическое количество бутылей</p>
+
+  <form id="close-form" method="post" action="{% url 'close_delivery' order.pk %}" class="wire-close-form">
+    {% csrf_token %}
+
+    <div class="wire-close-layout">
+            <div class="wire-close-left-col">
+                <div class="wire-close-box desktop-only">
+          <div class="wire-close-box-header">
+            <h2 class="wire-close-box-title">Доставка № WD-{{ order.pk|stringformat:"03d" }}</h2>
+            <span class="wire-status-tag">{% if order.status == 'assigned' %}Передан курьеру{% else %}{{ order.get_status_display }}{% endif %}</span>
+          </div>
+          <div class="wire-close-meta-line">
+            <strong>Получатель:</strong> {{ order.user.get_full_name|default:order.user.username }}
+          </div>
+          <div class="wire-close-meta-line">
+            <strong>Адрес:</strong> {{ order.address }}, {{ order.delivery_date|date:"j E" }}, {{ order.slot }}
+          </div>
+        </div>
+
+                <div class="wire-close-box wire-box-shaded mobile-only">
+          <h2 class="wire-close-box-title">Доставка № WD-{{ order.pk|stringformat:"03d" }}</h2>
+          <div class="wire-close-meta-line">{{ order.address }}</div>
+          <div class="wire-close-meta-line">{{ order.delivery_date|date:"j E" }} {{ order.slot }}</div>
+        </div>
+
+                <div class="wire-close-box wire-box-shaded desktop-only">
+          <h2 class="wire-close-box-title">Фактические данные</h2>
+
+          <div class="wire-form-row">
+            <label for="id_delivered_bottles" class="wire-form-label">Доставлено бутылей</label>
+            <div class="wire-form-field">
+              <input id="id_delivered_bottles" type="number" name="delivered_bottles"
+                     value="{{ order.bottles_total }}" min="0" class="wire-input-control" required>
+            </div>
+          </div>
+
+          <div class="wire-form-row">
+            <label for="id_returned_bottles" class="wire-form-label">Принято пустых бутылей</label>
+            <div class="wire-form-field">
+              <input id="id_returned_bottles" type="number" name="returned_bottles"
+                     value="{{ order.returned_bottles }}" min="0" class="wire-input-control" required>
+            </div>
+          </div>
+        </div>
+
+                <div class="wire-mobile-form-group mobile-only">
+          <label for="id_delivered_bottles_m" class="wire-form-label">Фактически доставлено</label>
+          <input id="id_delivered_bottles_m" type="number" name="delivered_bottles"
+                 value="{{ order.bottles_total }}" min="0" class="wire-input-control" required>
+        </div>
+
+        <div class="wire-mobile-form-group mobile-only">
+          <label for="id_returned_bottles_m" class="wire-form-label">Принято пустых бутылей</label>
+          <input id="id_returned_bottles_m" type="number" name="returned_bottles"
+                 value="{{ order.returned_bottles }}" min="0" class="wire-input-control" required>
+        </div>
+
+                <div class="wire-close-box wire-box-shaded mobile-only">
+          <h3 class="wire-close-calc-title">Расчёт после закрытия</h3>
+          <div class="wire-close-calc-line">Новый баланс: {{ post_close_balance }} бутыл{{ post_close_balance|pluralize:"ь,и,ей" }}</div>
+          <div class="wire-close-calc-line">Залог: {{ post_close_deposit|floatformat:"-2" }} ₽</div>
+        </div>
+
+        <button type="submit" class="wire-btn wire-btn-block wire-submit-btn mobile-only">Подтвердить закрытие</button>
+
+        <p class="wire-close-mobile-note mobile-only">
+          После подтверждения статус станет «Выполнен». Повторное закрытие недоступно.
+        </p>
+      </div>
+
+            <div class="wire-close-right-col desktop-only">
+                <div class="wire-close-box wire-box-shaded">
+          <h2 class="wire-close-box-title">Предварительный итог</h2>
+          <div class="wire-preview-sub">Баланс тары после закрытия</div>
+          <div class="wire-preview-balance">{{ post_close_balance }} бутыл{{ post_close_balance|pluralize:"ь,и,ей" }}</div>
+          <div class="wire-preview-deposit">Залог после пересчёта: {{ post_close_deposit|floatformat:"-2" }} ₽</div>
+        </div>
+
+                <div class="wire-close-box">
+          <h3 class="wire-close-notice-title">Важно</h3>
+          <p class="wire-close-notice-text">Статус, залог и баланс обновятся одной операцией.</p>
+        </div>
+
+        <button type="submit" class="wire-btn wire-btn-block wire-submit-btn">Подтвердить закрытие</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

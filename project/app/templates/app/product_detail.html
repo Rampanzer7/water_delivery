@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} {{ product.volume|floatformat:"-1" }} л | Святой Источник{% endblock %}
+
+{% block content %}
+<div class="wire-container wire-page-container">
+  <nav class="wire-breadcrumbs" aria-label="Хлебные крошки">
+    <a href="{% url 'catalog' %}">КАТАЛОГ</a> / <a href="{% url 'catalog' %}?kind={{ product.kind }}">{% if product.kind == 'cooler' or 'кулер' in product.name|lower %}КУЛЕРЫ{% else %}ВОДА{% endif %}</a>
+  </nav>
+
+  <header class="wire-product-detail-header">
+    <h1 class="wire-page-title">{{ product.name }}{% if product.kind == 'water' and " л" not in product.name and product.volume %} {{ product.volume|floatformat:"-1" }} л{% endif %}</h1>
+    <p class="wire-page-subtitle">{{ product.description|truncatechars:65|default:"Питьевая вода для дома и офиса" }}</p>
+  </header>
+
+  <div class="wire-product-detail-layout">
+      <div class="wire-detail-img-box">
+        {% if product.kind == 'cooler' or 'кулер' in product.name|lower %}
+        <img src="{% static 'images/cooler.jpeg' %}" alt="{{ product.name }}" width="240" height="240" class="wire-detail-img">
+        {% else %}
+        <img src="{% static 'images/bottle.jpeg' %}" alt="{{ product.name }}" width="240" height="240" class="wire-detail-img">
+        {% endif %}
+      </div>
+
+        <div class="wire-detail-info-col">
+            <div class="wire-stock-badge mobile-only">{% if product.stock > 0 %}В наличии{% else %}Под заказ{% endif %}</div>
+
+      <div class="wire-detail-price">{{ product.price|floatformat:"-2" }} ₽{% if product.kind == 'cooler' or 'кулер' in product.name|lower %}/мес{% endif %}</div>
+
+      <div class="wire-stock-badge desktop-only">{% if product.stock > 0 %}В наличии{% else %}Под заказ{% endif %}</div>
+
+      {% if product.kind == 'water' and product.deposit_price %}
+      <div class="wire-detail-deposit">Залог за тару: {{ product.deposit_price|floatformat:"-2" }} ₽</div>
+      {% endif %}
+
+      <p class="wire-detail-desc">
+        {% if product.description %}
+          {{ product.description }}
+        {% elif product.kind == 'cooler' or 'кулер' in product.name|lower %}
+          Современный кулер для воды. Надежная конструкция, быстрое охлаждение и нагрев воды для дома и офиса.
+        {% else %}
+          Чистая питьевая вода в оборотной бутыли 19 л. Подходит для кулера и ежедневного использования.
+        {% endif %}
+      </p>
+
+      <form method="post" action="{% url 'cart_add' product.pk %}" class="wire-detail-form">
+        {% csrf_token %}
+        <div class="wire-qty-block desktop-only">
+          <label class="wire-qty-label" for="detailQty">Количество</label>
+          <div class="wire-qty-counter">
+            <button type="button" class="wire-qty-btn" onclick="let q=document.getElementById('detailQty');if(q.value>1)q.value--;" aria-label="Уменьшить количество">−</button>
+            <input id="detailQty" type="number" name="quantity" value="1" min="1" max="99" class="wire-qty-input" aria-label="Количество">
+            <button type="button" class="wire-qty-btn" onclick="let q=document.getElementById('detailQty');q.value++;" aria-label="Увеличить количество">+</button>
+          </div>
+        </div>
+
+        <button type="submit" class="wire-btn wire-btn-detail desktop-only">Добавить в заказ</button>
+        <button type="submit" class="wire-btn wire-btn-detail wire-btn-block mobile-only">Заказать</button>
+      </form>
+
+      <p class="wire-detail-mobile-note mobile-only">
+        Доставка выбирается при оформлении заказа. Количество и залог пересчитываются автоматически.
+      </p>
+    </div>
+  </div>
+
+    <div class="wire-detail-info-box desktop-only">
+    <h3 class="wire-detail-info-title">Доставка и оплата</h3>
+    <p class="wire-detail-info-desc">Выберите адрес, дату и интервал доставки на следующем шаге.</p>
+  </div>
+</div>
+{% endblock %}

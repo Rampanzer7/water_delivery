@@ -31,40 +31,70 @@ ORDER_SORTS = [
 ]
 
 
+def home(request):
+    popular_waters = Product.objects.filter(is_active=True, kind=Product.WATER)[:3]
+    coolers = Cooler.objects.all()[:3]
+    return render(request, 'app/home.html', {
+        'popular_waters': popular_waters,
+        'coolers': coolers,
+    })
+
+
 def catalog(request):
     products = Product.objects.filter(is_active=True)
     query = request.GET.get('q', '').strip()
-    kind = request.GET.get('kind', '')
+    kind = request.GET.get('kind', '').strip()
+    volume = request.GET.get('volume', '').strip()
     price_min = to_decimal(request.GET.get('price_min'))
     price_max = to_decimal(request.GET.get('price_max'))
     only_available = request.GET.get('available') == '1'
-    sort = request.GET.get('sort', 'name')
+    sort = request.GET.get('sort', 'popular')
 
     if query:
         products = products.filter(search_text__contains=query.lower())
-    if kind in (Product.WATER, Product.PUMP):
+    if kind in (Product.WATER, Product.COOLER):
         products = products.filter(kind=kind)
+    else:
+        products = products.filter(kind__in=[Product.WATER, Product.COOLER])
+    if volume:
+        try:
+            vol_val = float(volume.replace(',', '.'))
+            products = products.filter(volume=vol_val)
+        except ValueError:
+            pass
     if price_min is not None:
         products = products.filter(price__gte=price_min)
     if price_max is not None:
         products = products.filter(price__lte=price_max)
     if only_available:
         products = products.filter(stock__gt=0)
-    if sort not in dict(PRODUCT_SORTS):
-        sort = 'name'
 
-    page = paginate(request, products.order_by(sort, 'pk'))
+    if sort == 'popular':
+        order_fields = ['-pk']
+    elif sort in dict(PRODUCT_SORTS):
+        order_fields = [sort, 'pk']
+    else:
+        order_fields = ['name', 'pk']
+
+    page = paginate(request, products.order_by(*order_fields))
     return render(request, 'app/catalog.html', {
         'page': page,
         'query': query,
         'kind': kind,
+        'volume': volume,
         'price_min': request.GET.get('price_min', ''),
         'price_max': request.GET.get('price_max', ''),
         'only_available': only_available,
         'sort': sort,
         'sort_options': PRODUCT_SORTS,
-        'kinds': Product.KIND_CHOICES,
+        'kinds': [('water', 'Вода'), ('cooler', 'Кулеры')],
+        'total_count': products.count(),
     })
+
+
+def product_detail(request, pk):
+    product = get_object_or_404(Product, pk=pk, is_active=True)
+    return render(request, 'app/product_detail.html', {'product': product})
 
 
 def register(request):
@@ -83,9 +113,20 @@ def register(request):
 
 @login_required
 def profile(request):
-    balance = ContainerBalance.objects.filter(user=request.user).first()
+    balance_obj = ContainerBalance.objects.filter(user=request.user).first()
+    bottles_count = balance_obj.bottles if balance_obj else 0
+    deposit_amount = bottles_count * 350
+    active_orders = Order.objects.filter(user=request.user).exclude(status=Order.DELIVERED)
+    active_orders_count = active_orders.count()
+    active_rentals = Rental.objects.filter(user=request.user, status=Rental.ACTIVE).count()
+    last_order = Order.objects.filter(user=request.user).select_related('address', 'slot').order_by('-created_at').first()
+
     return render(request, 'app/profile.html', {
-        'balance': balance.bottles if balance else 0,
+        'balance': bottles_count,
+        'deposit_amount': deposit_amount,
+        'active_orders_count': active_orders_count,
+        'active_rentals': active_rentals,
+        'last_order': last_order,
         'phone': getattr(getattr(request.user, 'profile', None), 'phone', ''),
     })
 
@@ -122,12 +163,13 @@ def lines_of_order(order):
 
 
 def order_page(request, form, lines, order=None):
-    returned = to_int(form['returned_bottles'].value())
-    return render(request, 'app/order_form.html', {
+    returned = to_int(form['returned_bottles'].value()) if form.is_bound else 0
+    totals = services.calculate_order(lines, returned)
+    return render(request, 'app/checkout.html', {
         'form': form,
         'order': order,
         'lines': [(product, quantity, product.price * quantity) for product, quantity in lines],
-        'totals': services.calculate_order(lines, returned),
+        'totals': totals,
     })
 
 

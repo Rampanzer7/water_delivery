@@ -123,21 +123,44 @@ def route_csv(request, pk):
 
 
 @role_required(is_staff_member)
-@require_POST
 def close_delivery(request, pk):
-    order = get_object_or_404(Order.objects.select_related('route_sheet'), pk=pk)
-    if not order.route_sheet_id:
+    order = get_object_or_404(Order.objects.select_related('route_sheet', 'user', 'address__district', 'slot'), pk=pk)
+    if not order.route_sheet_id and not request.user.is_superuser and not is_dispatcher(request.user):
         raise PermissionDenied
-    sheet = get_sheet_for(request.user, order.route_sheet_id)
-    try:
-        closed = services.close_delivery(order.pk)
-    except services.ServiceError as error:
-        messages.error(request, str(error))
-    else:
-        services.notify(closed.user, f'Заказ №{closed.pk} доставлен',
-                        f'Спасибо! Бутылей на руках теперь: {closed.user.container_balance.bottles}.')
-        messages.success(request, f'Доставка заказа №{closed.pk} закрыта, баланс тары обновлён.')
-    return redirect('route_detail', pk=sheet.pk)
+    sheet = get_sheet_for(request.user, order.route_sheet_id) if order.route_sheet_id else None
+
+    if request.method == 'POST':
+        delivered_bottles = to_int(request.POST.get('delivered_bottles'), order.bottles_total)
+        returned_bottles = to_int(request.POST.get('returned_bottles'), order.returned_bottles)
+        order.bottles_total = delivered_bottles
+        order.returned_bottles = returned_bottles
+        order.save(update_fields=['bottles_total', 'returned_bottles'])
+
+        try:
+            closed = services.close_delivery(order.pk)
+        except services.ServiceError as error:
+            messages.error(request, str(error))
+            return redirect('close_delivery', pk=order.pk)
+        else:
+            services.notify(closed.user, f'Заказ №{closed.pk} доставлен',
+                            f'Спасибо! Бутылей на руках теперь: {closed.user.container_balance.bottles}.')
+            messages.success(request, f'Доставка заказа №{closed.pk} закрыта, баланс тары обновлён.')
+            if sheet:
+                return redirect('route_detail', pk=sheet.pk)
+            return redirect('staff_orders')
+
+    balance_obj = getattr(order.user, 'container_balance', None)
+    current_balance = balance_obj.bottles if balance_obj else 0
+    post_close_balance = max(current_balance + order.bottles_total - order.returned_bottles, 0)
+    post_close_deposit = post_close_balance * 350
+
+    return render(request, 'app/close_delivery.html', {
+        'order': order,
+        'current_balance': current_balance,
+        'post_close_balance': post_close_balance,
+        'post_close_deposit': post_close_deposit,
+        'sheet': sheet,
+    })
 
 
 @role_required(is_dispatcher)
