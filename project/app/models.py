@@ -33,7 +33,8 @@ class DeliverySlot(models.Model):
 class Product(models.Model):
     WATER = 'water'
     PUMP = 'pump'
-    KIND_CHOICES = [(WATER, 'Вода'), (PUMP, 'Помпа')]
+    COOLER = 'cooler'
+    KIND_CHOICES = [(WATER, 'Вода'), (PUMP, 'Помпа'), (COOLER, 'Кулер')]
 
     name = models.CharField('Название', max_length=150)
     kind = models.CharField('Тип', max_length=10, choices=KIND_CHOICES, default=WATER)

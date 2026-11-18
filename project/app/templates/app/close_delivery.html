@@ -27,13 +27,13 @@
           </div>
         </div>
 
-                <div class="wire-close-box wire-box-shaded mobile-only">
+                <div class="wire-close-box mobile-only">
           <h2 class="wire-close-box-title">Доставка № WD-{{ order.pk|stringformat:"03d" }}</h2>
           <div class="wire-close-meta-line">{{ order.address }}</div>
           <div class="wire-close-meta-line">{{ order.delivery_date|date:"j E" }} {{ order.slot }}</div>
         </div>
 
-                <div class="wire-close-box wire-box-shaded desktop-only">
+                <div class="wire-close-box desktop-only">
           <h2 class="wire-close-box-title">Фактические данные</h2>
 
           <div class="wire-form-row">
@@ -65,7 +65,7 @@
                  value="{{ order.returned_bottles }}" min="0" class="wire-input-control" required>
         </div>
 
-                <div class="wire-close-box wire-box-shaded mobile-only">
+                <div class="wire-close-box mobile-only">
           <h3 class="wire-close-calc-title">Расчёт после закрытия</h3>
           <div class="wire-close-calc-line">Новый баланс: {{ post_close_balance }} бутыл{{ post_close_balance|pluralize:"ь,и,ей" }}</div>
           <div class="wire-close-calc-line">Залог: {{ post_close_deposit|floatformat:"-2" }} ₽</div>
@@ -79,7 +79,7 @@
       </div>
 
             <div class="wire-close-right-col desktop-only">
-                <div class="wire-close-box wire-box-shaded">
+                <div class="wire-close-box">
           <h2 class="wire-close-box-title">Предварительный итог</h2>
           <div class="wire-preview-sub">Баланс тары после закрытия</div>
           <div class="wire-preview-balance">{{ post_close_balance }} бутыл{{ post_close_balance|pluralize:"ь,и,ей" }}</div>

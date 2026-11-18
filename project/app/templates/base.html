@@ -14,7 +14,10 @@
 <body>
   <header class="wire-header">
     <div class="wire-container wire-header-row">
-      <a class="wire-brand" href="{% url 'home' %}">Святой Источник</a>
+      <a class="wire-brand" href="{% url 'home' %}">
+        <img src="{% static 'images/logo.jpg' %}" alt="Логотип" class="wire-brand-logo" width="32" height="32">
+        <span class="wire-brand-text">Святой Источник</span>
+      </a>
 
       <nav class="wire-nav-center desktop-nav" aria-label="Основная навигация">
         <a class="wire-nav-link" href="{% url 'catalog' %}">Вода и кулеры</a>
@@ -35,7 +38,13 @@
         <a class="wire-btn wire-btn-sm" href="{% url 'cart' %}">Заказать</a>
       </div>
 
-      <button class="mobile-menu-btn" type="button" aria-label="Открыть меню" aria-expanded="false" onclick="document.getElementById('mobileNav').classList.toggle('open')">☰</button>
+      <button class="mobile-menu-btn" type="button" aria-label="Открыть меню" aria-expanded="false" onclick="document.getElementById('mobileNav').classList.toggle('open')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
     </div>
 
     <nav id="mobileNav" class="mobile-menu" aria-label="Мобильное меню">

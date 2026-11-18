@@ -1889,9 +1889,6 @@ a.wire-link-action:hover {
   margin-top: 36px;
 }
 
-/* ==========================================================================
-   Product Detail Page
-   ========================================================================== */
 .wire-product-detail-header {
   margin-bottom: 24px;
 }
@@ -2052,9 +2049,6 @@ a.wire-link-action:hover {
   margin: 0;
 }
 
-/* ==========================================================================
-   Checkout Page
-   ========================================================================== */
 .wire-checkout-layout {
   display: grid;
   grid-template-columns: 1.35fr 1fr;
@@ -2152,9 +2146,6 @@ a.wire-link-action:hover {
   color: var(--color-muted);
 }
 
-/* ==========================================================================
-   Profile Page
-   ========================================================================== */
 .wire-profile-layout {
   display: grid;
   grid-template-columns: 240px 1fr;
@@ -2354,9 +2345,6 @@ a.wire-link-action:hover {
   line-height: 1;
 }
 
-/* ==========================================================================
-   Courier Close Delivery Page
-   ========================================================================== */
 .wire-close-layout {
   display: grid;
   grid-template-columns: 1.25fr 1fr;
@@ -2460,9 +2448,6 @@ a.wire-link-action:hover {
   line-height: 1.4;
 }
 
-/* ==========================================================================
-   Static Page (Delivery Info)
-   ========================================================================== */
 .wire-static-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -2582,11 +2567,7 @@ a.wire-link-action:hover {
   border: 1px solid rgba(148, 85, 0, 0.25);
 }
 
-/* ==========================================================================
-   Responsive Adaptations
-   ========================================================================== */
 
-/* Tablet (1024px) */
 @media (max-width: 1024px) {
   .wire-container {
     max-width: 928px;
@@ -2616,7 +2597,6 @@ a.wire-link-action:hover {
   }
 }
 
-/* Tablet (768px) */
 @media (max-width: 768px) {
   .desktop-only,
   .desktop-inline {
@@ -2861,7 +2841,6 @@ a.wire-link-action:hover {
   }
 }
 
-/* Mobile (640px and below, down to 375px) */
 @media (max-width: 640px) {
   .wire-container {
     padding: 0 20px;
@@ -2951,7 +2930,6 @@ a.wire-link-action:hover {
   }
 }
 
-/* Small mobile (360px) */
 @media (max-width: 360px) {
   .wire-container {
     padding: 0 20px;
