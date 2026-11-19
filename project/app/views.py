@@ -3,6 +3,7 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db.models import ProtectedError
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -152,10 +153,22 @@ def cart(request):
 def cart_add(request, pk):
     product = get_object_or_404(Product, pk=pk, is_active=True)
     quantity = to_int(request.POST.get('quantity'), 1) or 1
+    is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest' or 'application/json' in request.headers.get('accept', '')
     if product.stock < 1:
+        if is_ajax:
+            return JsonResponse({'success': False, 'error': 'Этого товара сейчас нет на складе.'}, status=400)
         messages.error(request, 'Этого товара сейчас нет на складе.')
     else:
         services.add_to_cart(request, product, quantity)
+        if is_ajax:
+            lines = services.cart_lines(request)
+            totals = services.calculate_order(lines, 0)
+            return JsonResponse({
+                'success': True,
+                'cart_count': totals['bottles'],
+                'cart_total': str(totals['total']),
+                'message': f'«{product.name}» добавлена в корзину.',
+            }, json_dumps_params={'ensure_ascii': False})
         messages.success(request, f'«{product.name}» добавлена в корзину.')
     return redirect(safe_next(request, 'catalog'))
 
