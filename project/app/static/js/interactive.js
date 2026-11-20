@@ -298,8 +298,7 @@
       if (!match) return;
       var productId = match[1];
 
-      // ДЕФЕКТ 5: Ошибочный селектор (возвращает null, кнопка быстрого просмотра не монтируется)
-      var imgBox = card.querySelector('.card-image-box');
+      var imgBox = card.querySelector('.wire-card-img-box');
       if (imgBox) {
         var qvBtn = document.createElement('button');
         qvBtn.type = 'button';

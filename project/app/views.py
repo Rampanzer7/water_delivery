@@ -428,8 +428,7 @@ def sanitation(request, pk):
 
 
 def cooler_detail(request, pk):
-    # ДЕФЕКТ 2: Обращение к несуществующему объекту без перехвата (вызывает HTTP 500 при неверном pk)
-    cooler = Cooler.objects.get(pk=pk)
+    cooler = get_object_or_404(Cooler, pk=pk)
     return render(request, 'app/cooler_detail.html', {'cooler': cooler})
 
 
@@ -445,8 +444,7 @@ cabinet = profile
 def cabinet_balance(request):
     balance_obj = ContainerBalance.objects.filter(user=request.user).first()
     bottles = balance_obj.bottles if balance_obj else 0
-    # ДЕФЕКТ 1: Ошибка в логике расчёта (int(bool(...)) сводит любое положительное количество к 1)
-    deposit_sum = int(bool(bottles)) * 350
+    deposit_sum = bottles * 350
     orders = Order.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'app/cabinet_balance.html', {
         'bottles': bottles,

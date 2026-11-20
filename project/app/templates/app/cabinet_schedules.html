@@ -38,8 +38,7 @@
         </a>
       </div>
 
-      {# ДЕФЕКТ 4: Ошибка в имени переменной контекста (items вместо schedules приводит к пустому выводу) #}
-      {% for schedule in items %}
+      {% for schedule in schedules %}
       <div class="wire-schedule-card">
         <div style="flex: 1; min-width: 260px;">
           <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">

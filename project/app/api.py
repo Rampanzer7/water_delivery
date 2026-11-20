@@ -110,8 +110,7 @@ def api_quickview(request, pk):
         'price': str(product.price),
         'deposit_price': str(product.deposit_price or 0),
         'volume': f"{product.volume:g} л" if product.volume else "19 л",
-        # ДЕФЕКТ 3: Неверный тип данных (строка вместо числа: "25" вместо 25)
-        'stock': str(product.stock),
+        'stock': product.stock,
         'in_stock': product.stock > 0,
         'description': product.description or 'Чистая питьевая вода в оборотной бутыли 19 л. Подходит для кулера и ежедневного использования.',
         'photo': photo_url,
