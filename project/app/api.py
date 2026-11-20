@@ -52,6 +52,7 @@ def api_search(request):
     q_lower = query.lower()
     results = []
 
+    # Search active water products
     for w in Product.objects.filter(is_active=True, kind=Product.WATER):
         text_corp = f"{w.name} {w.search_text or ''} {w.description or ''}".lower()
         if q_lower in text_corp:
@@ -70,6 +71,7 @@ def api_search(request):
             if len(results) >= 6:
                 break
 
+    # Search coolers
     cooler_count = 0
     for c in Cooler.objects.all():
         text_corp = f"{c.name} {c.description or ''}".lower()
@@ -108,7 +110,8 @@ def api_quickview(request, pk):
         'price': str(product.price),
         'deposit_price': str(product.deposit_price or 0),
         'volume': f"{product.volume:g} л" if product.volume else "19 л",
-        'stock': product.stock,
+        # ДЕФЕКТ 3: Неверный тип данных (строка вместо числа: "25" вместо 25)
+        'stock': str(product.stock),
         'in_stock': product.stock > 0,
         'description': product.description or 'Чистая питьевая вода в оборотной бутыли 19 л. Подходит для кулера и ежедневного использования.',
         'photo': photo_url,

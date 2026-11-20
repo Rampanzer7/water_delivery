@@ -1,3 +1,9 @@
+/**
+ * Занятие 9, Пункты 3 и 4*: Клиентская интерактивность и динамические элементы
+ * 1. Живой поиск (Live Search) с индикатором загрузки и обновлением списка без перезагрузки
+ * 2. Модальное окно быстрого просмотра товара (Quick View Modal) с fetch-запросом к собственному JSON API
+ * 3. Добавление в корзину через fetch без перезагрузки страницы с динамическим счётчиком и toast-уведомлением
+ */
 (function () {
   'use strict';
 
@@ -20,6 +26,9 @@
     return cookieVal;
   }
 
+  // ==========================================
+  // 1. Toast-уведомления
+  // ==========================================
   function showToast(message, type) {
     type = type || 'success';
     var toast = document.getElementById('wireToast');
@@ -37,6 +46,9 @@
     }, 3500);
   }
 
+  // ==========================================
+  // 2. Живой поиск (Live Search) с fetch и индикатором загрузки
+  // ==========================================
   function setupLiveSearch() {
     var searchInputs = document.querySelectorAll('.wire-search-input');
     Array.prototype.forEach.call(searchInputs, function (input) {
@@ -65,6 +77,7 @@
           return;
         }
 
+        // Индикатор загрузки
         dropdown.innerHTML = '<div class="wire-search-status"><span class="wire-spinner"></span> Поиск товаров...</div>';
         dropdown.style.display = 'block';
 
@@ -114,6 +127,9 @@
     });
   }
 
+  // ==========================================
+  // 3. Модальное окно быстрого просмотра товара
+  // ==========================================
   var modalEl = null;
 
   function ensureModal() {
@@ -201,6 +217,9 @@
     }
   }
 
+  // ==========================================
+  // 4. AJAX добавление в корзину без перезагрузки
+  // ==========================================
   function addToCartAjax(productId, btnEl, quantity) {
     quantity = quantity || 1;
     var csrfToken = getCsrfToken();
@@ -243,6 +262,7 @@
           }, 1500);
         }
 
+        // Обновляем счётчик в шапке
         updateHeaderCartBadge(data.cart_count);
         showToast(data.message || 'Товар добавлен в корзину');
       })
@@ -265,6 +285,7 @@
   }
 
   function setupQuickViewTriggers() {
+    // В каталоге добавляем кнопки быстрого просмотра для карточек товаров
     var cards = document.querySelectorAll('.wire-catalog-card, .wire-cards-grid .wire-card');
     Array.prototype.forEach.call(cards, function (card) {
       if (card.dataset.quickviewInit === 'true') return;
@@ -277,7 +298,8 @@
       if (!match) return;
       var productId = match[1];
 
-      var imgBox = card.querySelector('.wire-card-img-box');
+      // ДЕФЕКТ 5: Ошибочный селектор (возвращает null, кнопка быстрого просмотра не монтируется)
+      var imgBox = card.querySelector('.card-image-box');
       if (imgBox) {
         var qvBtn = document.createElement('button');
         qvBtn.type = 'button';
@@ -314,6 +336,9 @@
     });
   }
 
+  // ==========================================
+  // Вспомогательные функции
+  // ==========================================
   function escapeHtml(str) {
     if (!str) return '';
     return String(str)

@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
@@ -14,6 +16,8 @@ from .helpers import get_own, paginate, safe_next, to_decimal, to_int
 from .models import (Address, ContainerBalance, Cooler, DeliverySchedule, Order,
                      Product, Rental, SiteSetting)
 from .permissions import is_dispatcher
+
+logger = logging.getLogger(__name__)
 
 PRODUCT_SORTS = [
     ('name', 'Название А–Я'),
@@ -81,6 +85,7 @@ def catalog(request):
         order_fields = ['name', 'pk']
 
     page = paginate(request, products.order_by(*order_fields))
+    logger.debug("Открыт каталог воды, страница %s", page.number)
     return render(request, 'app/catalog.html', {
         'page': page,
         'query': query,
@@ -110,14 +115,24 @@ def product_detail(request, pk):
 def register(request):
     if request.user.is_authenticated:
         return redirect('catalog')
+    logger.info("Получена форма регистрации")
     form = RegisterForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
-        user = form.save()
-        login(request, user)
-        services.notify(user, 'Добро пожаловать в «Святой источник»',
-                        f'Здравствуйте, {user.username}! Вы зарегистрированы, теперь можно заказывать воду и арендовать кулер.')
-        messages.success(request, 'Регистрация прошла успешно.')
-        return redirect('catalog')
+        try:
+            if form.cleaned_data.get('username') == 'test_db_error':
+                from django.db.utils import OperationalError
+                raise OperationalError("Учебный отказ записи в базу данных")
+            user = form.save()
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            services.notify(user, 'Добро пожаловать в «Святой источник»',
+                            f'Здравствуйте, {user.username}! Вы зарегистрированы, теперь можно заказывать воду и арендовать кулер.')
+            logger.info("Регистрация завершена, создан пользователь %s", user.username)
+            messages.success(request, 'Регистрация прошла успешно.')
+            return redirect('catalog')
+        except Exception:
+            logger.error("Ошибка сохранения регистрации", exc_info=True)
+            from django.http import HttpResponse
+            return HttpResponse("503 Service Unavailable", status=503)
     return render(request, 'app/register.html', {'form': form})
 
 
@@ -208,12 +223,19 @@ def checkout(request):
 
     bottles = services.calculate_order(lines, 0)['bottles']
     form = OrderForm(request.POST or None, user=request.user, bottles_total=bottles)
+    if request.method == 'POST':
+        logger.info("Получена форма оформления заказа")
     if request.method == 'POST' and form.is_valid():
         try:
             order = services.create_order(request.user, lines, form.cleaned_data)
         except services.ServiceError as error:
+            logger.warning("Отказ при создании заказа: %s", error)
             form.add_error(None, str(error))
+        except Exception:
+            logger.error("Ошибка сохранения заказа", exc_info=True)
+            raise
         else:
+            logger.info("Заказ №%s успешно создан для пользователя %s", order.pk, request.user.username)
             request.session['cart'] = {}
             services.notify(request.user, f'Заказ №{order.pk} оформлен',
                             f'Доставим {order.delivery_date:%d.%m.%Y} в интервале {order.slot}. К оплате: {order.total} ₽.')
@@ -406,7 +428,8 @@ def sanitation(request, pk):
 
 
 def cooler_detail(request, pk):
-    cooler = get_object_or_404(Cooler, pk=pk)
+    # ДЕФЕКТ 2: Обращение к несуществующему объекту без перехвата (вызывает HTTP 500 при неверном pk)
+    cooler = Cooler.objects.get(pk=pk)
     return render(request, 'app/cooler_detail.html', {'cooler': cooler})
 
 
@@ -422,11 +445,14 @@ cabinet = profile
 def cabinet_balance(request):
     balance_obj = ContainerBalance.objects.filter(user=request.user).first()
     bottles = balance_obj.bottles if balance_obj else 0
-    deposit_sum = bottles * 350
+    # ДЕФЕКТ 1: Ошибка в логике расчёта (int(bool(...)) сводит любое положительное количество к 1)
+    deposit_sum = int(bool(bottles)) * 350
     orders = Order.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'app/cabinet_balance.html', {
         'bottles': bottles,
+        'balance': bottles,
         'deposit_sum': deposit_sum,
+        'deposit_amount': deposit_sum,
         'orders': orders,
     })
 
