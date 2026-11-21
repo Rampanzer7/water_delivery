@@ -34,11 +34,6 @@ STAFF_SORTS = [
     ('-status', 'Статус Я–А'),
 ]
 
-
-# ==============================================================================
-# ОПЕРАТОР / ДИСПЕТЧЕРСКАЯ
-# ==============================================================================
-
 @role_required(is_dispatcher)
 def operator_orders(request):
     orders = Order.objects.select_related('user__profile', 'address__district', 'slot', 'route_sheet__driver')
@@ -212,11 +207,6 @@ def stats(request):
         'district_values': [row['n'] for row in by_district],
     })
 
-
-# ==============================================================================
-# КУРЬЕР / ВОДИТЕЛЬ
-# ==============================================================================
-
 @role_required(is_staff_member)
 def routes(request):
     sheets = RouteSheet.objects.select_related('driver')
@@ -365,10 +355,6 @@ def close_delivery(request, pk):
         'sheet': sheet,
     })
 
-
-# ==============================================================================
-# АДМИНИСТРАТОР
-# ==============================================================================
 
 @role_required(is_admin)
 def manage_dashboard(request):
