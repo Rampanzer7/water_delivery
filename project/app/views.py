@@ -140,7 +140,9 @@ def register(request):
 def profile(request):
     balance_obj = ContainerBalance.objects.filter(user=request.user).first()
     bottles_count = balance_obj.bottles if balance_obj else 0
-    deposit_amount = bottles_count * 350
+    water_prod = Product.objects.filter(kind=Product.WATER, is_active=True).first()
+    deposit_rate = water_prod.deposit_price if water_prod else 300
+    deposit_amount = bottles_count * deposit_rate
     active_orders = Order.objects.filter(user=request.user).exclude(status=Order.DELIVERED)
     active_orders_count = active_orders.count()
     active_rentals = Rental.objects.filter(user=request.user, status=Rental.ACTIVE).count()
@@ -149,6 +151,7 @@ def profile(request):
     return render(request, 'app/profile.html', {
         'balance': bottles_count,
         'deposit_amount': deposit_amount,
+        'deposit_rate': deposit_rate,
         'active_orders_count': active_orders_count,
         'active_rentals': active_rentals,
         'last_order': last_order,
@@ -167,8 +170,15 @@ def cart(request):
 @require_POST
 def cart_add(request, pk):
     product = get_object_or_404(Product, pk=pk, is_active=True)
-    quantity = to_int(request.POST.get('quantity'), 1) or 1
     is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest' or 'application/json' in request.headers.get('accept', '')
+    raw_qty = to_int(request.POST.get('quantity'), 1)
+    if raw_qty is None or raw_qty < 1:
+        if is_ajax:
+            return JsonResponse({'success': False, 'error': 'Количество товара должно быть не менее 1 шт.'}, status=400)
+        messages.error(request, 'Количество товара должно быть не менее 1 шт.')
+        return redirect(safe_next(request, 'catalog'))
+    quantity = min(raw_qty, 50)
+
     if product.stock < 1:
         if is_ajax:
             return JsonResponse({'success': False, 'error': 'Этого товара сейчас нет на складе.'}, status=400)
@@ -444,13 +454,16 @@ cabinet = profile
 def cabinet_balance(request):
     balance_obj = ContainerBalance.objects.filter(user=request.user).first()
     bottles = balance_obj.bottles if balance_obj else 0
-    deposit_sum = bottles * 350
+    water_prod = Product.objects.filter(kind=Product.WATER, is_active=True).first()
+    deposit_rate = water_prod.deposit_price if water_prod else 300
+    deposit_sum = bottles * deposit_rate
     orders = Order.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'app/cabinet_balance.html', {
         'bottles': bottles,
         'balance': bottles,
         'deposit_sum': deposit_sum,
         'deposit_amount': deposit_sum,
+        'deposit_rate': deposit_rate,
         'orders': orders,
     })
 
@@ -506,6 +519,7 @@ def cabinet_rental_detail(request, pk):
     return render(request, 'app/cabinet_rental_detail.html', {
         'rental': rental,
         'sanitations': sanitations,
+        'requests': sanitations,
     })
 
 

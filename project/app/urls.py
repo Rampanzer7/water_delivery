@@ -43,6 +43,7 @@ urlpatterns = [
     path('cabinet/rentals/', views.my_rentals, name='cabinet_rentals'),
     path('rentals/', views.my_rentals, name='my_rentals'),
     path('cabinet/rentals/<int:pk>/', views.cabinet_rental_detail, name='cabinet_rental_detail'),
+    path('cabinet/rentals/<int:pk>/service/', views.sanitation, name='cabinet_rental_service'),
     path('cabinet/rentals/<int:pk>/service/', views.sanitation, name='cabinet_sanitation'),
     path('rentals/<int:pk>/sanitation/', views.sanitation, name='sanitation'),
 
@@ -79,8 +80,11 @@ urlpatterns = [
     path('staff/stats/', staff_views.stats, name='stats'),
     path('manage/stats/', staff_views.stats, name='manage_stats'),
     path('routes/', staff_views.routes, name='routes'),
+    path('staff/routes/', staff_views.routes, name='staff_routes'),
     path('routes/<int:pk>/', staff_views.route_detail, name='route_detail'),
+    path('staff/routes/<int:pk>/', staff_views.route_detail, name='staff_route_detail'),
     path('routes/<int:pk>/csv/', staff_views.route_csv, name='route_csv'),
+    path('staff/routes/<int:pk>/csv/', staff_views.route_csv, name='staff_route_csv'),
     path('deliveries/<int:pk>/close/', staff_views.close_delivery, name='close_delivery'),
 
     path('courier/', staff_views.courier_deliveries, name='courier_deliveries'),
