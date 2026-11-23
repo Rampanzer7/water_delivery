@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
@@ -6,6 +7,7 @@ from django.utils import timezone
 
 from .models import (Address, ContainerBalance, Cooler, DeliverySchedule, DeliverySlot, District,
                      Product, Profile, SanitationRequest)
+from .validators import validate_image
 
 User = get_user_model()
 
@@ -67,8 +69,11 @@ class OrderForm(forms.Form):
         slot = data.get('slot')
         date = data.get('delivery_date')
         returned = data.get('returned_bottles')
-        if date and date < timezone.localdate():
-            self.add_error('delivery_date', 'Нельзя выбрать прошедшую дату.')
+        if date:
+            if date < timezone.localdate():
+                self.add_error('delivery_date', 'Нельзя выбрать прошедшую дату.')
+            elif date > timezone.localdate() + timedelta(days=14):
+                self.add_error('delivery_date', 'Дата доставки не может быть позже 14 дней от текущей даты.')
         if address and slot and not slot.districts.filter(pk=address.district_id).exists():
             self.add_error('slot', 'В этот район в выбранный интервал мы не доставляем.')
         if returned is not None and returned > self.balance + self.bottles_total:
@@ -147,11 +152,7 @@ class ProductForm(forms.ModelForm):
     def clean_photo(self):
         photo = self.cleaned_data.get('photo')
         if photo and hasattr(photo, 'size'):
-            if photo.size > 2 * 1024 * 1024:
-                raise forms.ValidationError('Размер фото не должен превышать 2 МБ.')
-            name = photo.name.lower()
-            if not (name.endswith('.jpg') or name.endswith('.jpeg') or name.endswith('.png') or name.endswith('.webp')):
-                raise forms.ValidationError('Допустимые форматы изображения: JPEG, PNG, WebP.')
+            validate_image(photo)
         return photo
 
 
@@ -173,11 +174,7 @@ class CoolerForm(forms.ModelForm):
     def clean_photo(self):
         photo = self.cleaned_data.get('photo')
         if photo and hasattr(photo, 'size'):
-            if photo.size > 2 * 1024 * 1024:
-                raise forms.ValidationError('Размер фото не должен превышать 2 МБ.')
-            name = photo.name.lower()
-            if not (name.endswith('.jpg') or name.endswith('.jpeg') or name.endswith('.png') or name.endswith('.webp')):
-                raise forms.ValidationError('Допустимые форматы изображения: JPEG, PNG, WebP.')
+            validate_image(photo)
         return photo
 
 

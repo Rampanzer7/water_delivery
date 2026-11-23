@@ -84,10 +84,10 @@
           </div>
 
           {% if form.comment %}
-          <div class="wire-form-row desktop-only">
+          <div class="wire-form-row">
             <label for="id_comment" class="wire-form-label">Комментарий курьеру</label>
             <div class="wire-form-field">
-              <input id="id_comment" type="text" name="comment" value="{{ form.comment.value|default:'' }}" class="wire-input-control">
+              <input id="id_comment" type="text" name="comment" value="{{ form.comment.value|default:'' }}" class="wire-input-control" placeholder="Код домофона, подъезд, этаж...">
             </div>
           </div>
           {% endif %}
@@ -116,6 +116,11 @@
         <div class="wire-summary-row">
           <span>Товары</span>
           <span class="wire-summary-val"><span id="sum-goods">{{ totals.goods|floatformat:"-2" }}</span> ₽</span>
+        </div>
+
+        <div id="row-discount" class="wire-summary-row" style="color: #2e7d32; font-weight: 500; {% if not totals.discount_amount %}display: none;{% endif %}">
+          <span>Скидка на 1-й заказ (<span id="sum-discount-percent">{{ totals.discount_percent|default:"10" }}</span>%)</span>
+          <span class="wire-summary-val">-<span id="sum-discount">{{ totals.discount_amount|floatformat:"-2" }}</span> ₽</span>
         </div>
 
         <div class="wire-summary-row">

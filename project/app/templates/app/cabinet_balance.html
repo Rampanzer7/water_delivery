@@ -30,33 +30,33 @@
     <div class="wire-profile-content">
       <div class="wire-balance-hero">
         <div>
-          <div class="wire-balance-hero-val">{{ balance }} бутыл{{ balance|pluralize:"ь,и,ей" }} 19 л</div>
-          <div class="wire-balance-hero-sub">Сумма залоговой стоимости: <strong>{{ deposit_amount|floatformat:"-2" }} ₽</strong> (из расчёта 350 ₽ за тару)</div>
+          <div class="wire-balance-hero-val">{{ bottles|default:balance }} бутыл{{ bottles|default:balance|pluralize:"ь,ей" }} 19 л</div>
+          <div class="wire-balance-hero-sub">Сумма залоговой стоимости: <strong>{{ deposit_sum|default:deposit_amount|floatformat:"-2" }} ₽</strong> (из расчёта {{ deposit_rate|default:"300" }} ₽ за тару)</div>
         </div>
         <div>
-          <a href="{% url 'order_new' %}" class="wire-btn" style="background: #ffffff; color: var(--color-primary); font-weight: 700; text-decoration: none; padding: 12px 24px;">Заказать воду</a>
+          <a href="{% url 'order_new' %}" class="wire-btn wire-btn-white">Заказать воду</a>
         </div>
       </div>
 
-      <div class="wire-card" style="padding: 24px; margin-bottom: 24px;">
-        <h2 style="font-size: 18px; color: var(--color-navy); margin-top: 0; margin-bottom: 12px;">Как устроена залоговая система тары</h2>
-        <div style="font-size: 14px; line-height: 1.6; color: var(--color-text);">
-          <p style="margin: 0 0 10px 0;">
-            1. <strong>Гарантийный залог:</strong> при заказе воды в оборотной таре за каждую бутыль вносится залог 350 ₽.
+      <div class="wire-card wire-card-padded">
+        <h2 class="wire-section-card-title">Как устроена залоговая система тары</h2>
+        <div class="wire-body-text">
+          <p class="wire-p-margin">
+            1. <strong>Гарантийный залог:</strong> при заказе воды в оборотной таре за каждую бутыль вносится залог {{ deposit_rate|default:"300" }} ₽.
           </p>
-          <p style="margin: 0 0 10px 0;">
+          <p class="wire-p-margin">
             2. <strong>Бесплатный обмен:</strong> когда курьер привозит новый заказ, вы отдаёте равное количество пустых бутылей — залог повторно не взимается.
           </p>
-          <p style="margin: 0;">
+          <p>
             3. <strong>Возврат средств:</strong> если вы решите прекратить заказ воды, курьер заберёт пустые бутыли, и полная сумма залога будет возвращена.
           </p>
         </div>
       </div>
 
       <div class="wire-table-card">
-        <div style="padding: 16px 20px; border-bottom: 1px solid var(--color-border-light); display: flex; justify-content: space-between; align-items: center;">
-          <h3 style="margin: 0; font-size: 16px; color: var(--color-navy);">История движения тары по заказам</h3>
-          <span style="font-size: 13px; color: var(--color-muted);">Всего заказов: {{ orders.count }}</span>
+        <div class="wire-table-header-row">
+          <h3 class="wire-table-title">История движения тары по заказам</h3>
+          <span class="wire-table-count">Всего заказов: {{ orders.count }}</span>
         </div>
         <table class="wire-table">
           <thead>
@@ -72,13 +72,13 @@
             {% for order in orders %}
             <tr>
               <td>
-                <a href="{% url 'cabinet_order_detail' order.pk %}" style="font-weight: 600; color: var(--color-primary); text-decoration: none;">
+                <a href="{% url 'cabinet_order_detail' order.pk %}" class="wire-link-accent">
                   №{{ order.pk }}
                 </a>
               </td>
               <td>{{ order.delivery_date|date:"d.m.Y" }}</td>
-              <td><span style="font-weight: 600; color: var(--color-navy);">+{{ order.bottles_total }}</span></td>
-              <td><span style="font-weight: 600; color: var(--color-success);">-{{ order.returned_bottles }}</span></td>
+              <td><span class="wire-balance-plus">+{{ order.bottles_total }}</span></td>
+              <td><span class="wire-balance-minus">-{{ order.returned_bottles }}</span></td>
               <td>
                 {% if order.status == 'delivered' %}
                 <span class="wire-badge wire-badge-green">Доставлен</span>
@@ -91,7 +91,7 @@
             </tr>
             {% empty %}
             <tr>
-              <td colspan="5" style="text-align: center; color: var(--color-muted); padding: 32px;">
+              <td colspan="5" class="wire-table-empty">
                 Заказов с оборотной тарой пока не было.
               </td>
             </tr>

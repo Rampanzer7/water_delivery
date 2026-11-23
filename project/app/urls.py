@@ -4,6 +4,7 @@ from django.urls import path, reverse_lazy
 from . import api, staff_views, views
 
 urlpatterns = [
+    # Публичные страницы
     path('', views.home, name='home'),
     path('catalog/', views.catalog, name='catalog'),
     path('catalog/<int:pk>/', views.product_detail, name='product_detail'),
@@ -14,6 +15,7 @@ urlpatterns = [
     path('coolers/<int:pk>/rent/', views.rent_cooler, name='rent_cooler'),
     path('conditions/', views.conditions, name='conditions'),
 
+    # Корзина и заказ
     path('cart/', views.cart, name='cart'),
     path('cart/add/<int:pk>/', views.cart_add, name='cart_add'),
     path('cart/update/<int:pk>/', views.cart_update, name='cart_update'),
@@ -21,17 +23,19 @@ urlpatterns = [
     path('order/new/', views.order_new, name='order_new'),
     path('order/<int:pk>/done/', views.order_done, name='order_done'),
 
-    path('accounts/login/', auth_views.LoginView.as_view(), name='login'),
+    # Авторизация и регистрация (с защитой от перебора паролей SEC-01)
+    path('accounts/login/', views.RateLimitedLoginView.as_view(), name='login'),
     path('accounts/register/', views.register, name='register'),
     path('accounts/password/', auth_views.PasswordChangeView.as_view(success_url=reverse_lazy('password_change_done')), name='password_change'),
     path('accounts/password/done/', auth_views.PasswordChangeDoneView.as_view(), name='password_change_done'),
     path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'),
-    path('login/', auth_views.LoginView.as_view()),
+    path('login/', views.RateLimitedLoginView.as_view()),
     path('register/', views.register),
     path('password/', auth_views.PasswordChangeView.as_view(success_url=reverse_lazy('password_change_done'))),
     path('password/done/', auth_views.PasswordChangeDoneView.as_view()),
     path('logout/', auth_views.LogoutView.as_view()),
 
+    # Личный кабинет клиента
     path('cabinet/', views.cabinet, name='cabinet'),
     path('profile/', views.profile, name='profile'),
     path('cabinet/balance/', views.cabinet_balance, name='cabinet_balance'),
@@ -66,6 +70,7 @@ urlpatterns = [
     path('addresses/<int:pk>/delete/', views.address_delete, name='address_delete'),
     path('addresses/<int:pk>/delete/', views.address_delete),
 
+    # Рабочее место оператора
     path('operator/orders/', staff_views.operator_orders, name='operator_orders'),
     path('staff/orders/', staff_views.operator_orders, name='staff_orders'),
     path('operator/orders/<int:pk>/', staff_views.operator_order_detail, name='operator_order_detail'),
@@ -87,12 +92,14 @@ urlpatterns = [
     path('staff/routes/<int:pk>/csv/', staff_views.route_csv, name='staff_route_csv'),
     path('deliveries/<int:pk>/close/', staff_views.close_delivery, name='close_delivery'),
 
+    # Рабочее место курьера
     path('courier/', staff_views.courier_deliveries, name='courier_deliveries'),
     path('courier/deliveries/', staff_views.courier_deliveries),
     path('courier/deliveries/<int:pk>/', staff_views.courier_delivery_detail, name='courier_delivery_detail'),
     path('courier/deliveries/<int:pk>/close/', staff_views.courier_close_delivery, name='courier_close_delivery'),
     path('courier/deliveries/<int:pk>/finish/', staff_views.courier_close_delivery, name='courier_delivery_close'),
 
+    # Панель администратора
     path('manage/', staff_views.manage_dashboard, name='manage_dashboard'),
     path('manage/settings/', staff_views.manage_settings, name='manage_settings'),
     path('manage/users/', staff_views.manage_users, name='manage_users'),
@@ -114,12 +121,16 @@ urlpatterns = [
     path('manage/products/<int:pk>/edit/', staff_views.manage_product_edit, name='manage_product_edit'),
     path('manage/products/<int:pk>/delete/', staff_views.manage_product_delete, name='manage_product_delete'),
 
+    # Страницы ошибок (для проверки)
     path('403/', views.custom_403, name='custom_403'),
     path('404/', views.custom_404, name='custom_404'),
+    path('500/', views.custom_500, name='custom_500'),
 
+    # API
     path('api/slots/', api.api_slots, name='api_slots'),
     path('api/calc/', api.api_calc, name='api_calc'),
     path('api/search/', api.api_search, name='api_search'),
     path('api/quickview/<int:pk>/', api.api_quickview, name='api_quickview'),
+    path('defects/', views.defects_summary, name='defects_summary'),
 ]
 

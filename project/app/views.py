@@ -1,8 +1,11 @@
 import logging
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
+from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.db.models import ProtectedError
 from django.http import JsonResponse
@@ -530,3 +533,121 @@ def custom_403(request, exception=None):
 def custom_404(request, exception=None):
     return render(request, '404.html', status=404)
 
+
+from django.core.exceptions import ValidationError
+
+
+def custom_500(request):
+    try:
+        return render(request, '500.html', status=500)
+    except Exception:
+        from django.http import HttpResponse
+        return HttpResponse(
+            '<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8">'
+            '<title>500 — Внутренняя ошибка сервера</title>'
+            '<style>body{font-family:sans-serif;padding:40px;text-align:center;color:#333;}'
+            'h1{color:#e11d48;}</style></head><body>'
+            '<h1>500 — Внутренняя ошибка сервера</h1>'
+            '<p>Произошла непредвиденная ошибка при обработке запроса. Мы уже работаем над её устранением.</p>'
+            '<p><a href="/">На главную</a></p></body></html>',
+            status=500,
+            content_type='text/html; charset=utf-8'
+        )
+
+
+class RateLimitedAuthenticationForm(auth_views.AuthenticationForm):
+    """
+    Форма авторизации с превентивной блокировкой проверки подлинности (authenticate)
+    при превышении допустимого лимита попыток входа, что предотвращает исчерпание CPU
+    от вычислений PBKDF2 и исключает ложные сообщения об успехе входа.
+    """
+    def __init__(self, *args, **kwargs):
+        self.is_rate_limited = kwargs.pop('is_rate_limited', False)
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        if self.is_rate_limited:
+            raise ValidationError(
+                'Слишком много неудачных попыток входа. Учётная запись временно заблокирована на 5 минут.',
+                code='locked_out'
+            )
+        return super().clean()
+
+
+class RateLimitedLoginView(auth_views.LoginView):
+    """
+    Класс авторизации с защитой от перебора паролей (Brute Force / Rate Limiting).
+    Ограничивает количество неудачных попыток входа для конкретного пользователя (5 попыток)
+    и с одного IP-адреса (15 попыток) с использованием Django Cache API.
+    При активной блокировке проверка пароля не производится (защита от атак отказа в обслуживании).
+    """
+    template_name = 'registration/login.html'
+    form_class = RateLimitedAuthenticationForm
+
+    def get_client_ip(self):
+        # Используем гарантированный адрес сетевого уровня REMOTE_ADDR для защиты от спуфинга
+        if hasattr(self, 'request') and self.request:
+            return self.request.META.get('REMOTE_ADDR', '127.0.0.1')
+        return '127.0.0.1'
+
+    def get_user_cache_key(self, username):
+        u = (username or '').strip().lower()
+        return f"login_fail_u_{u}"
+
+    def get_ip_cache_key(self):
+        return f"login_fail_ip_{self.get_client_ip()}"
+
+    def is_locked_out(self, username):
+        max_attempts = getattr(settings, 'LOGIN_RATE_LIMIT_ATTEMPTS', 5)
+        max_ip_attempts = getattr(settings, 'LOGIN_RATE_LIMIT_IP_ATTEMPTS', max_attempts * 3)
+        user_fails = cache.get(self.get_user_cache_key(username), 0)
+        ip_fails = cache.get(self.get_ip_cache_key(), 0)
+        return user_fails >= max_attempts or ip_fails >= max_ip_attempts
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        if self.request.method == 'POST':
+            username = self.request.POST.get('username', '').strip()
+            if self.is_locked_out(username):
+                kwargs['is_rate_limited'] = True
+        return kwargs
+
+    def record_failure(self, username):
+        timeout = getattr(settings, 'LOGIN_RATE_LIMIT_TIMEOUT', 300)
+        user_key = self.get_user_cache_key(username)
+        ip_key = self.get_ip_cache_key()
+        user_fails = cache.get(user_key, 0) + 1
+        ip_fails = cache.get(ip_key, 0) + 1
+        cache.set(user_key, user_fails, timeout=timeout)
+        cache.set(ip_key, ip_fails, timeout=timeout)
+        logger.warning(
+            "Неудачная попытка входа: пользователь '%s', IP %s (попытка %s)",
+            username, self.get_client_ip(), user_fails
+        )
+
+    def reset_failures(self, username):
+        cache.delete(self.get_user_cache_key(username))
+
+    def post(self, request, *args, **kwargs):
+        username = request.POST.get('username', '').strip()
+        if self.is_locked_out(username):
+            logger.warning("Блокировка попытки перебора пароля для '%s' с IP %s", username, self.get_client_ip())
+        return super().post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        username = form.cleaned_data.get('username')
+        self.reset_failures(username)
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        username = self.request.POST.get('username', '').strip()
+        if not self.is_locked_out(username):
+            self.record_failure(username)
+            if self.is_locked_out(username):
+                form.add_error(None, 'Слишком много неудачных попыток входа. Учётная запись временно заблокирована на 5 минут.')
+        return super().form_invalid(form)
+
+
+
+def defects_summary(request):
+    return render(request, 'app/defects_summary.html')

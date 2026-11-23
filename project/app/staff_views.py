@@ -34,6 +34,11 @@ STAFF_SORTS = [
     ('-status', 'Статус Я–А'),
 ]
 
+
+# ==============================================================================
+# ОПЕРАТОР / ДИСПЕТЧЕРСКАЯ
+# ==============================================================================
+
 @role_required(is_dispatcher)
 def operator_orders(request):
     orders = Order.objects.select_related('user__profile', 'address__district', 'slot', 'route_sheet__driver')
@@ -207,6 +212,11 @@ def stats(request):
         'district_values': [row['n'] for row in by_district],
     })
 
+
+# ==============================================================================
+# КУРЬЕР / ВОДИТЕЛЬ
+# ==============================================================================
+
 @role_required(is_staff_member)
 def routes(request):
     sheets = RouteSheet.objects.select_related('driver')
@@ -238,8 +248,10 @@ def route_csv(request, pk):
     response.write('\ufeff')
     writer = csv.writer(response, delimiter=';')
     writer.writerow(['Заказ', 'Интервал', 'Адрес', 'Клиент', 'Телефон', 'Бутылей', 'Сдаёт пустых', 'К оплате', 'Статус'])
-    for order in sheet.orders.select_related('user__profile', 'address__district', 'slot').order_by('slot__start'):
-        phone = order.user.profile.phone if hasattr(order.user, 'profile') else ''
+    orders = sheet.orders.select_related('user__profile', 'address__district', 'slot').order_by('slot__start')
+    for order in orders:
+        profile = getattr(order.user, 'profile', None)
+        phone = profile.phone if profile else ''
         writer.writerow([
             order.pk, order.slot, order.address, order.user.username, phone,
             order.bottles_total, order.returned_bottles, order.total, order.get_status_display(),
@@ -345,7 +357,7 @@ def close_delivery(request, pk):
             return redirect('operator_orders')
 
     post_close_balance = max(current_balance + order.bottles_total - order.returned_bottles, 0)
-    post_close_deposit = post_close_balance * 350
+    post_close_deposit = post_close_balance * 300
 
     return render(request, 'app/close_delivery.html', {
         'order': order,
@@ -355,6 +367,10 @@ def close_delivery(request, pk):
         'sheet': sheet,
     })
 
+
+# ==============================================================================
+# АДМИНИСТРАТОР
+# ==============================================================================
 
 @role_required(is_admin)
 def manage_dashboard(request):

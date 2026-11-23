@@ -34,13 +34,16 @@ def api_calc(request):
         lines = lines_of_order(order)
     else:
         lines = services.cart_lines(request)
-    totals = services.calculate_order(lines, returned)
+    discount_percent = services.get_first_order_discount() if (request.user.is_authenticated and services.is_first_order(request.user) and not order_pk) else 0
+    totals = services.calculate_order(lines, returned, discount_percent=discount_percent)
     return JsonResponse({
         'goods': str(totals['goods']),
         'deposit': str(totals['deposit']),
         'total': str(totals['total']),
         'missing': totals['missing'],
         'bottles': totals['bottles'],
+        'discount_amount': str(totals['discount_amount']),
+        'discount_percent': totals['discount_percent'],
     }, json_dumps_params={'ensure_ascii': False})
 
 

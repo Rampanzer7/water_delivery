@@ -5,6 +5,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Служба доставки чистой питьевой воды 19 литров и долгосрочной аренды кулеров «Святой Источник».">
+  <title>{% block title %}Святой Источник — Доставка воды 19 л и аренда кулеров{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -12,16 +14,19 @@
 </head>
 
 <body>
+  <div id="wireCsrfHolder" class="wire-hidden" aria-hidden="true">{% csrf_token %}</div>
   <header class="wire-header">
     <div class="wire-container wire-header-row">
       <a class="wire-brand" href="{% url 'home' %}">
         <img src="{% static 'images/logo.jpg' %}" alt="Логотип" class="wire-brand-logo" width="32" height="32">
         <span class="wire-brand-text">Святой Источник</span>
       </a>
+
       <nav class="wire-nav-center desktop-nav" aria-label="Основная навигация">
         <a class="wire-nav-link" href="{% url 'catalog' %}">Каталог воды</a>
         <a class="wire-nav-link" href="{% url 'coolers' %}">Аренда кулеров</a>
       </nav>
+
       <div class="wire-header-right desktop-nav">
         {% if user.is_authenticated %}
         {% if user_is_admin %}
@@ -42,18 +47,18 @@
         <a class="wire-nav-link" href="{% url 'login' %}">Войти</a>
         <a class="wire-nav-link" href="{% url 'register' %}">Регистрация</a>
         {% endif %}
-        <a class="wire-btn wire-btn-sm" href="{% url 'cart' %}">Заказать</a>
+        <a class="wire-btn wire-btn-sm" href="{% url 'cart' %}">Заказать{% if cart_count > 0 %} ({{ cart_count }}){% endif %}</a>
       </div>
-      <button class="mobile-menu-btn" type="button" aria-label="Открыть меню" aria-expanded="false"
-        onclick="document.getElementById('mobileNav').classList.toggle('open')">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+
+      <button class="mobile-menu-btn" type="button" aria-label="Открыть меню" aria-expanded="false" onclick="var m=document.getElementById('mobileNav');m.classList.toggle('open');this.setAttribute('aria-expanded', m.classList.contains('open'));">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <line x1="3" y1="6" x2="21" y2="6"></line>
           <line x1="3" y1="12" x2="21" y2="12"></line>
           <line x1="3" y1="18" x2="21" y2="18"></line>
         </svg>
       </button>
     </div>
+
     <nav id="mobileNav" class="mobile-menu" aria-label="Мобильное меню">
       <a class="wire-nav-link" href="{% url 'catalog' %}">Каталог воды</a>
       <a class="wire-nav-link" href="{% url 'coolers' %}">Аренда кулеров</a>
@@ -80,9 +85,10 @@
       <a class="wire-nav-link" href="{% url 'login' %}">Войти</a>
       <a class="wire-nav-link" href="{% url 'register' %}">Регистрация</a>
       {% endif %}
-      <a class="wire-btn" href="{% url 'cart' %}">Заказать</a>
+      <a class="wire-btn" href="{% url 'cart' %}">Заказать{% if cart_count > 0 %} ({{ cart_count }}){% endif %}</a>
     </nav>
   </header>
+
   <main>
     {% if messages %}
     <div class="wire-container">
@@ -93,14 +99,17 @@
     {% endif %}
     {% block content %}{% endblock %}
   </main>
+
   <footer class="wire-footer">
     <div class="wire-container">
       <div class="wire-footer-line wire-footer-title">Святой Источник - Вода, доставка, аренда кулеров</div>
-      <div class="wire-footer-line wire-footer-sub">Поддержка: ежедневно 08:00–20:00 | <a href="{% url 'conditions' %}"
-          class="footer-link">Условия и контакты</a></div>
-      <div class="wire-footer-line wire-footer-copy">©2026 Политика конфиденциальности</div>
+      <div class="wire-footer-line wire-footer-sub">Поддержка: ежедневно 08:00–20:00 | <a href="{% url 'conditions' %}" class="footer-link">Условия и контакты</a></div>
+      <div class="wire-footer-line wire-footer-copy">© 2026 ООО «Святой Источник». Все права защищены. | <a href="{% url 'conditions' %}" class="footer-link">Политика конфиденциальности</a></div>
     </div>
   </footer>
+
+  <script src="{% static 'js/validation.js' %}" defer></script>
+  <script src="{% static 'js/interactive.js' %}" defer></script>
   {% block scripts %}{% endblock %}
 </body>
 
