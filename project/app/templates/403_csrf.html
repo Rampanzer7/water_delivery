@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}403 — Ошибка проверки CSRF | Святой Источник{% endblock %}
+
+{% block content %}
+<div class="wire-container">
+  <div class="wire-error-page">
+    <div class="wire-error-code">403</div>
+    <h1 class="wire-page-title wire-mb-12">Ошибка проверки CSRF</h1>
+    <p class="wire-page-subtitle wire-mb-24">Запрос отклонён защитным механизмом CSRF: отсутствует или недействителен токен безопасности. Пожалуйста, вернитесь на форму и отправьте её повторно.</p>
+    <div class="wire-btn-group-center">
+      <a class="wire-btn wire-btn-primary" href="{% url 'catalog' %}">В каталог воды</a>
+      <a class="wire-btn wire-btn-secondary" href="{% url 'home' %}">На главную</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

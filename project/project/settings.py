@@ -11,13 +11,27 @@ if env_file.exists():
         line = line.strip()
         if line and not line.startswith('#') and '=' in line:
             name, value = line.split('=', 1)
-            os.environ.setdefault(name.strip(), value.strip())
+            os.environ.setdefault(name.strip(), value.strip(' \'"'))
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-water-delivery-dev-key-change-in-prod-2026')
-DEBUG = os.environ.get('DJANGO_DEBUG', '1') == '1'
-ALLOWED_HOSTS = [h.strip() for h in os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver').split(',') if h.strip()]
-if DEBUG and 'testserver' not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append('testserver')
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = os.environ.get('DJANGO_DEBUG') == '1'
+ENABLE_TOOLBAR = DEBUG and os.environ.get('DJANGO_TOOLBAR') == '1'
+INTERNAL_IPS = ['127.0.0.1', '::1']
+
+allowed_hosts_env = os.environ.get('DJANGO_ALLOWED_HOSTS')
+if allowed_hosts_env:
+    ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_env.split(',') if h.strip()]
+    if 'testserver' not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append('testserver')
+else:
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'testserver']
+
+# Настройки безопасности и защиты от перебора паролей (Brute Force Protection)
+LOGIN_RATE_LIMIT_ATTEMPTS = 5
+LOGIN_RATE_LIMIT_IP_ATTEMPTS = 15
+LOGIN_RATE_LIMIT_TIMEOUT = 300  # 5 минут блокировки
 
 INSTALLED_APPS = [
     'app',
@@ -38,6 +52,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+if ENABLE_TOOLBAR:
+    INSTALLED_APPS.append('debug_toolbar')
+    MIDDLEWARE.insert(0, 'debug_toolbar.middleware.DebugToolbarMiddleware')
 
 ROOT_URLCONF = 'project.urls'
 
@@ -104,3 +122,39 @@ AUTHENTICATION_BACKENDS = [
     'app.backends.EmailOrUsernameModelBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+LOG_DIR = BASE_DIR / 'logs'
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'app': {
+            'format': '{asctime} {levelname} {name} {message}',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'app_file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': LOG_DIR / 'app.log',
+            'encoding': 'utf-8',
+            'maxBytes': 1048576,
+            'backupCount': 2,
+            'formatter': 'app',
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'app',
+        },
+    },
+    'loggers': {
+        'app': {
+            'handlers': ['app_file', 'console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}

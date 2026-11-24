@@ -131,6 +131,5 @@ urlpatterns = [
     path('api/calc/', api.api_calc, name='api_calc'),
     path('api/search/', api.api_search, name='api_search'),
     path('api/quickview/<int:pk>/', api.api_quickview, name='api_quickview'),
-    path('defects/', views.defects_summary, name='defects_summary'),
 ]
 

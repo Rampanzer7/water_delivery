@@ -647,7 +647,3 @@ class RateLimitedLoginView(auth_views.LoginView):
                 form.add_error(None, 'Слишком много неудачных попыток входа. Учётная запись временно заблокирована на 5 минут.')
         return super().form_invalid(form)
 
-
-
-def defects_summary(request):
-    return render(request, 'app/defects_summary.html')

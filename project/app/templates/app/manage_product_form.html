@@ -63,7 +63,7 @@
         <div class="wire-form-group">
           <label for="{{ form.deposit_price.id_for_label }}" class="wire-form-label">{{ form.deposit_price.label }} (₽)</label>
           <input type="number" step="0.01" name="{{ form.deposit_price.name }}" id="{{ form.deposit_price.id_for_label }}"
-                 value="{{ form.deposit_price.value|default:350 }}" class="wire-form-input" placeholder="350.00">
+                 value="{{ form.deposit_price.value|default:300 }}" class="wire-form-input" placeholder="300.00">
           {% if form.deposit_price.errors %}<p class="wire-form-error">{{ form.deposit_price.errors.0 }}</p>{% endif %}
         </div>
 
