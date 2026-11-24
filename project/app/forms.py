@@ -45,13 +45,38 @@ class AddressForm(forms.ModelForm):
     class Meta:
         model = Address
         fields = ['district', 'street', 'house', 'flat', 'comment']
+        error_messages = {
+            'district': {
+                'required': 'Пожалуйста, выберите район города из списка.',
+            },
+            'street': {
+                'required': 'Укажите улицу доставки.',
+            },
+            'house': {
+                'required': 'Укажите номер дома или строения.',
+            },
+        }
+
+    def clean_street(self):
+        street = self.cleaned_data.get('street', '').strip()
+        if len(street) < 2:
+            raise forms.ValidationError('Укажите корректное название улицы (не менее 2 символов).')
+        return street
+
+    def clean_house(self):
+        house = self.cleaned_data.get('house', '').strip()
+        if not house:
+            raise forms.ValidationError('Укажите номер дома или строения.')
+        if not any(c.isdigit() for c in house):
+            raise forms.ValidationError('Номер дома должен содержать хотя бы одну цифру (например: 10, 14к2 или 5А).')
+        return house
 
 
 class OrderForm(forms.Form):
     address = forms.ModelChoiceField(queryset=Address.objects.none(), label='Адрес доставки')
     delivery_date = forms.DateField(label='Дата доставки', widget=DateInput())
     slot = forms.ModelChoiceField(queryset=DeliverySlot.objects.all(), label='Интервал доставки')
-    returned_bottles = forms.IntegerField(label='Сколько пустых бутылей сдаёте курьеру', min_value=0, initial=0)
+    returned_bottles = forms.IntegerField(label='Сколько пустых бутылей сдаёте курьеру', initial=0)
     comment = forms.CharField(label='Комментарий курьеру', required=False, widget=forms.Textarea(attrs={'rows': 3}))
 
     def __init__(self, *args, user, bottles_total, **kwargs):
@@ -63,6 +88,12 @@ class OrderForm(forms.Form):
             f'У вас на руках бутылей: {self.balance}. Можно сдать не больше {self.balance + bottles_total}.'
         )
 
+    def clean_returned_bottles(self):
+        returned = self.cleaned_data.get('returned_bottles')
+        if returned is not None and returned < 0:
+            raise forms.ValidationError('Количество возвращаемых бутылей не может быть отрицательным числом.')
+        return returned
+
     def clean(self):
         data = super().clean()
         address = data.get('address')
@@ -71,13 +102,13 @@ class OrderForm(forms.Form):
         returned = data.get('returned_bottles')
         if date:
             if date < timezone.localdate():
-                self.add_error('delivery_date', 'Нельзя выбрать прошедшую дату.')
+                self.add_error('delivery_date', 'Нельзя выбрать прошедшую дату. Пожалуйста, укажите сегодняшнюю или будущую дату.')
             elif date > timezone.localdate() + timedelta(days=14):
-                self.add_error('delivery_date', 'Дата доставки не может быть позже 14 дней от текущей даты.')
+                self.add_error('delivery_date', 'Дата доставки не может быть позже 14 дней от текущей даты. Заказы оформляются не более чем на 2 недели вперёд.')
         if address and slot and not slot.districts.filter(pk=address.district_id).exists():
-            self.add_error('slot', 'В этот район в выбранный интервал мы не доставляем.')
+            self.add_error('slot', 'В выбранный район доставка в указанный интервал не осуществляется. Пожалуйста, выберите другой интервал или измените адрес доставки.')
         if returned is not None and returned > self.balance + self.bottles_total:
-            self.add_error('returned_bottles', 'Вы не можете сдать больше бутылей, чем у вас есть.')
+            self.add_error('returned_bottles', f'Вы не можете сдать больше {self.balance + self.bottles_total} бутылей (баланс: {self.balance}, в заказе: {self.bottles_total}). Укажите корректное количество.')
         return data
 
 
@@ -187,6 +218,14 @@ class DeliverySlotForm(forms.ModelForm):
             'end': forms.TimeInput(attrs={'type': 'time'}),
             'districts': forms.CheckboxSelectMultiple(),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start = cleaned_data.get('start')
+        end = cleaned_data.get('end')
+        if start and end and start >= end:
+            self.add_error('end', 'Время окончания интервала доставки должно быть строго позже времени начала.')
+        return cleaned_data
 
 
 class DistrictForm(forms.ModelForm):

@@ -7,11 +7,11 @@
 <div class="wire-container">
   <div class="wire-error-page">
     <div class="wire-error-code">403</div>
-    <h1 class="wire-page-title" style="margin-bottom: 12px;">Доступ ограничен</h1>
-    <p class="wire-page-subtitle" style="margin-bottom: 24px;">У вас нет доступа к этому разделу. Страница предназначена
-      только для уполномоченных пользователей системы.</p>
-    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+    <h1 class="wire-page-title wire-mb-12">Доступ ограничен</h1>
+    <p class="wire-page-subtitle wire-mb-24">У вас нет доступа к этому разделу. Страница предназначена только для уполномоченных пользователей системы.</p>
+    <div class="wire-btn-group-center">
       <a class="wire-btn wire-btn-primary" href="{% url 'home' %}">На главную</a>
+      <a class="wire-btn wire-btn-secondary" href="{% url 'catalog' %}">В каталог и поиск</a>
       {% if not user.is_authenticated %}
       <a class="wire-btn wire-btn-secondary" href="{% url 'login' %}">Войти под другим логином</a>
       {% else %}

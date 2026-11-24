@@ -71,7 +71,7 @@
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
             <div class="wire-form-group">
               <label for="id_house" class="wire-form-label">Дом / Корпус</label>
-              <input type="text" name="house" id="id_house" maxlength="10" required class="wire-form-input {% if form.house.errors %}wire-input-error{% endif %}" value="{{ form.house.value|default:'' }}" placeholder="10">
+              <input type="text" name="house" id="id_house" maxlength="10" required class="wire-form-input {% if form.house.errors %}wire-input-error{% endif %}" value="{{ form.house.value|default:'' }}" placeholder="Например: 10">
               {% if form.house.errors %}
               <span class="wire-field-error">{{ form.house.errors.0 }}</span>
               {% endif %}

@@ -1497,5 +1497,239 @@ class Lesson15FunctionalAndSecurityTests(TestCase):
             )
 
 
+class Lesson16ExceptionHandlingTests(TestCase):
+    """
+    Набор из 5 негативных тестов для Занятия 16 (Анализ и обеспечение обработки исключительных ситуаций):
+    1. Обращение к несуществующей записи возвращает 404 (get_object_or_404 / Http404);
+    2. Доступ без прав возвращает 403 (PermissionDenied / role_required);
+    3. Форма с неверными данными не создаёт запись и показывает сообщения об ошибках на русском языке с сохранением полей;
+    4. При ошибке в середине составной операции срабатывает откат транзакции (rollback) и данные не меняются;
+    5. Расчёт показателей и агрегатов на пустой выборке не вызывает ZeroDivisionError и не падает.
+    """
+
+    def setUp(self):
+        from decimal import Decimal
+        from django.contrib.auth.models import Group, User
+        from django.core.cache import cache
+        from app.permissions import DISPATCHER_GROUP, DRIVER_GROUP
+        from app.models import District, DeliverySlot, Product, Address, Order, ContainerBalance
+        cache.clear()
+
+        # Ролевые группы
+        self.disp_group, _ = Group.objects.get_or_create(name=DISPATCHER_GROUP)
+        self.driver_group, _ = Group.objects.get_or_create(name=DRIVER_GROUP)
+
+        # Тестовые пользователи
+        self.user_a = User.objects.create_user(username='client_neg_a', email='nega@example.com', password='NegPassword123!')
+        self.user_b = User.objects.create_user(username='client_neg_b', email='negb@example.com', password='NegPassword123!')
+        self.operator = User.objects.create_user(username='disp_neg', email='dispneg@example.com', password='NegPassword123!')
+        self.operator.groups.add(self.disp_group)
+        self.admin_user = User.objects.create_superuser(username='admin_neg', email='adminneg@example.com', password='NegPassword123!')
+
+        # Балансы тары
+        ContainerBalance.objects.create(user=self.user_a, bottles=5)
+        ContainerBalance.objects.create(user=self.user_b, bottles=0)
+
+        # Справочные данные
+        self.district = District.objects.create(name='Заволжский район')
+        self.slot = DeliverySlot.objects.create(start='09:00', end='13:00')
+        self.slot.districts.add(self.district)
+
+        # Каталог товаров
+        self.water = Product.objects.create(
+            name='Вода Святой Источник 19 л негатив',
+            kind=Product.WATER,
+            price=Decimal('280.00'),
+            deposit_price=Decimal('350.00'),
+            volume=19.0,
+            stock=50,
+            is_active=True
+        )
+
+        # Адрес клиента А
+        self.address_a = Address.objects.create(
+            user=self.user_a,
+            district=self.district,
+            street='Советская',
+            house='14',
+            flat='5',
+            comment='Домофон 5В'
+        )
+
+    def test_neg01_nonexistent_record_returns_404(self):
+        """Негативный тест 1: Обращение к несуществующей записи возвращает HTTP 404."""
+        # 1. Запрос несуществующего товара по невалидному ID
+        resp_product = self.client.get('/water/999999/')
+        self.assertEqual(resp_product.status_code, 404)
+
+        # 2. Запрос несуществующего заказа авторизованным клиентом
+        self.client.force_login(self.user_a)
+        resp_order = self.client.get(reverse('order_detail', kwargs={'pk': 999999}))
+        self.assertEqual(resp_order.status_code, 404)
+
+        # 3. Проверка фирменного шаблона 404.html со ссылками на главную и каталог/поиск
+        resp_custom = self.client.get(reverse('custom_404'))
+        self.assertEqual(resp_custom.status_code, 404)
+        self.assertContains(resp_custom, '404', status_code=404)
+        self.assertContains(resp_custom, 'Страница не найдена', status_code=404)
+        self.assertContains(resp_custom, 'На главную', status_code=404)
+        self.assertContains(resp_custom, 'В каталог и поиск', status_code=404)
+
+    def test_neg02_unauthorized_access_returns_403(self):
+        """Негативный тест 2: Доступ без прав возвращает HTTP 403 (Forbidden)."""
+        # 1. Обычный клиент пытается открыть панель диспетчера
+        self.client.force_login(self.user_a)
+        resp_disp = self.client.get(reverse('operator_orders'))
+        self.assertEqual(resp_disp.status_code, 403)
+
+        # 2. Клиент пытается открыть страницу настроек администратора
+        resp_admin = self.client.get(reverse('manage_settings'))
+        self.assertEqual(resp_admin.status_code, 403)
+
+        # 3. Проверка фирменного шаблона 403.html со ссылками на главную и каталог/поиск
+        resp_custom_403 = self.client.get(reverse('custom_403'))
+        self.assertEqual(resp_custom_403.status_code, 403)
+        self.assertContains(resp_custom_403, '403', status_code=403)
+        self.assertContains(resp_custom_403, 'Доступ ограничен', status_code=403)
+        self.assertContains(resp_custom_403, 'На главную', status_code=403)
+        self.assertContains(resp_custom_403, 'В каталог и поиск', status_code=403)
+
+    def test_neg03_invalid_form_does_not_create_record_and_shows_error(self):
+        """Негативный тест 3: Форма с неверными данными не создаёт запись и показывает ошибки на русском с сохранением значений."""
+        from app.models import Address
+        self.client.force_login(self.user_a)
+        addr_count_before = Address.objects.count()
+
+        # Отправляем форму адреса с заведомо некорректными данными (улица из 1 буквы, пустой дом, пустой район)
+        resp = self.client.post(reverse('address_create'), {
+            'street': 'У',
+            'house': '',
+            'flat': '12',
+            'comment': 'Тестовый комментарий',
+            'district': ''
+        })
+
+        # Запись в БД НЕ должна быть создана
+        self.assertEqual(Address.objects.count(), addr_count_before)
+        # Статус 200 — страница формы перерисована с ошибками
+        self.assertEqual(resp.status_code, 200)
+        form = resp.context['form']
+        self.assertFalse(form.is_valid())
+        self.assertIn('street', form.errors)
+        self.assertIn('house', form.errors)
+        self.assertIn('district', form.errors)
+
+        # Проверка русскоязычных сообщений об ошибках
+        self.assertContains(resp, 'Укажите корректное название улицы (не менее 2 символов).')
+        self.assertContains(resp, 'Укажите номер дома или строения.')
+        self.assertContains(resp, 'Пожалуйста, выберите район города из списка.')
+
+        # Проверка сохранения введённых пользователем данных (field value preservation)
+        self.assertContains(resp, 'value="У"')
+        self.assertContains(resp, 'value="12"')
+        self.assertContains(resp, 'Тестовый комментарий')
+
+        # 2. Проверка метода clean_house на отсутствие цифры в номере дома
+        resp_house = self.client.post(reverse('address_create'), {
+            'street': 'Ленина',
+            'house': 'без_номера',
+            'flat': '12',
+            'district': self.district.pk
+        })
+        self.assertEqual(Address.objects.count(), addr_count_before)
+        self.assertContains(resp_house, 'Номер дома должен содержать хотя бы одну цифру (например: 10, 14к2 или 5А).')
+
+        # 3. Проверка метода clean_returned_bottles в OrderForm на отрицательное значение
+        from app.forms import OrderForm, DeliverySlotForm
+        order_form = OrderForm({'returned_bottles': -5}, user=self.user_a, bottles_total=2)
+        self.assertFalse(order_form.is_valid())
+        self.assertIn('Количество возвращаемых бутылей не может быть отрицательным числом.', order_form.errors['returned_bottles'])
+
+        # 4. Проверка метода DeliverySlotForm.clean на интервал start >= end
+        slot_form = DeliverySlotForm({'start': '18:00', 'end': '10:00', 'districts': [self.district.pk]})
+        self.assertFalse(slot_form.is_valid())
+        self.assertIn('Время окончания интервала доставки должно быть строго позже времени начала.', slot_form.errors['end'])
+
+    def test_neg04_transaction_rollback_on_mid_operation_failure(self):
+        """Негативный тест 4: При ошибке в середине составной операции данные не меняются (откат транзакции rollback)."""
+        from unittest.mock import patch
+        from django.utils import timezone
+        from app.models import Order, OrderItem
+        from app.services import create_order
+
+        stock_before = self.water.stock
+        order_count_before = Order.objects.count()
+        item_count_before = OrderItem.objects.count()
+        balance_before = self.user_a.container_balance.bottles
+
+        order_data = {
+            'address': self.address_a,
+            'slot': self.slot,
+            'delivery_date': timezone.localdate(),
+            'returned_bottles': 0,
+            'comment': 'Тест транзакции'
+        }
+
+        # Имитируем сбой БД / шлюза на этапе создания позиций заказа внутри create_order
+        with patch.object(OrderItem.objects, 'create', side_effect=RuntimeError('Имитация сбоя при записи позиции заказа')):
+            with self.assertRaises(RuntimeError):
+                create_order(self.user_a, [(self.water, 2)], order_data)
+
+        # Проверяем целостность и атомарность транзакции:
+        # Ни заголовок Order, ни позиция OrderItem НЕ должны сохраниться в БД
+        self.assertEqual(Order.objects.count(), order_count_before)
+        self.assertEqual(OrderItem.objects.count(), item_count_before)
+
+        # Остаток товара на складе НЕ должен уменьшиться
+        self.water.refresh_from_db()
+        self.assertEqual(self.water.stock, stock_before)
+
+        # Баланс тары пользователя НЕ должен измениться
+        self.user_a.container_balance.refresh_from_db()
+        self.assertEqual(self.user_a.container_balance.bottles, balance_before)
+
+    def test_neg05_calculation_on_empty_queryset_does_not_crash(self):
+        """Негативный тест 5: Расчёт показателей на пустой выборке не падает с ZeroDivisionError или исключениями."""
+        from decimal import Decimal
+        from app.models import Order
+        from app.services import calculate_order
+
+        # Очищаем все заказы для создания полностью пустой выборки
+        Order.objects.all().delete()
+        self.assertEqual(Order.objects.count(), 0)
+
+        # 1. Расчёт итогов заказа на пустом списке позиций
+        totals = calculate_order(lines=[], returned_bottles=0, discount_percent=10)
+        self.assertEqual(totals['bottles'], 0)
+        self.assertEqual(totals['goods'], Decimal('0'))
+        self.assertEqual(totals['deposit'], Decimal('0'))
+        self.assertEqual(totals['total'], Decimal('0'))
+        self.assertEqual(totals['discount_amount'], Decimal('0'))
+
+        # 2. Страница аналитики и статистики для диспетчера на пустой БД
+        self.client.force_login(self.operator)
+        resp_stats = self.client.get(reverse('stats'))
+        self.assertEqual(resp_stats.status_code, 200)
+        self.assertEqual(resp_stats.context['count'], 0)
+        self.assertEqual(resp_stats.context['revenue'], 0)
+        self.assertEqual(resp_stats.context['average'], 0)
+        self.assertEqual(resp_stats.context['share'], 0)
+
+        # 3. Каталог при фильтрации с пустой выборкой
+        resp_empty_cat = self.client.get(f"{reverse('catalog')}?price_min=999999")
+        self.assertEqual(resp_empty_cat.status_code, 200)
+        self.assertEqual(len(resp_empty_cat.context['page'].object_list), 0)
+
+    def test_neg06_custom_500_template_and_logging(self):
+        """Проверка шаблона внутренней ошибки сервера 500 и ссылок на главную и поиск."""
+        resp_500 = self.client.get(reverse('custom_500'))
+        self.assertEqual(resp_500.status_code, 500)
+        self.assertContains(resp_500, '500', status_code=500)
+        self.assertContains(resp_500, 'Внутренняя ошибка сервера', status_code=500)
+        self.assertContains(resp_500, 'На главную', status_code=500)
+        self.assertContains(resp_500, 'В каталог и поиск', status_code=500)
+
+
+
 
 

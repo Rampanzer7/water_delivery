@@ -527,10 +527,13 @@ def cabinet_rental_detail(request, pk):
 
 
 def custom_403(request, exception=None):
+    user_str = request.user.username if hasattr(request, 'user') and request.user.is_authenticated else 'Аноним'
+    logger.warning("Отказ в доступе (HTTP 403): путь=%s, пользователь=%s", request.path, user_str)
     return render(request, '403.html', status=403)
 
 
 def custom_404(request, exception=None):
+    logger.warning("Страница не найдена (HTTP 404): путь=%s", request.path)
     return render(request, '404.html', status=404)
 
 
@@ -538,18 +541,26 @@ from django.core.exceptions import ValidationError
 
 
 def custom_500(request):
+    path = getattr(request, 'path', 'неизвестный путь')
+    import sys
+    exc_type, _, _ = sys.exc_info()
+    if exc_type is not None:
+        logger.error("Внутренняя ошибка сервера (HTTP 500) при обработке пути: %s", path, exc_info=True)
+    else:
+        logger.error("Внутренняя ошибка сервера (HTTP 500) при обработке пути: %s", path)
     try:
         return render(request, '500.html', status=500)
-    except Exception:
+    except Exception as exc:
+        logger.critical("Не удалось отрендерить 500.html: %s", exc)
         from django.http import HttpResponse
         return HttpResponse(
             '<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8">'
             '<title>500 — Внутренняя ошибка сервера</title>'
-            '<style>body{font-family:sans-serif;padding:40px;text-align:center;color:#333;}'
-            'h1{color:#e11d48;}</style></head><body>'
+            '<style>body{font-family:sans-serif;padding:40px;text-align:center;color:#17202F;background:#F2F8FC;}'
+            'h1{color:#C93636;}</style></head><body>'
             '<h1>500 — Внутренняя ошибка сервера</h1>'
             '<p>Произошла непредвиденная ошибка при обработке запроса. Мы уже работаем над её устранением.</p>'
-            '<p><a href="/">На главную</a></p></body></html>',
+            '<p><a href="/">На главную</a> | <a href="/catalog/">В каталог и поиск</a></p></body></html>',
             status=500,
             content_type='text/html; charset=utf-8'
         )
@@ -647,3 +658,7 @@ class RateLimitedLoginView(auth_views.LoginView):
                 form.add_error(None, 'Слишком много неудачных попыток входа. Учётная запись временно заблокирована на 5 минут.')
         return super().form_invalid(form)
 
+
+
+def defects_summary(request):
+    return render(request, 'app/defects_summary.html')
